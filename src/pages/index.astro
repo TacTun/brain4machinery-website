@@ -1,5 +1,22 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const insightCollections = ['blog', 'guides', 'glossary', 'compare'] as const;
+const allInsights = (
+  await Promise.all(
+    insightCollections.map((c) => getCollection(c, ({ data }) => !data.draft))
+  )
+).flat();
+const latestInsights = allInsights
+  .sort((a, b) => b.data.publishedDate.getTime() - a.data.publishedDate.getTime())
+  .slice(0, 3);
+const collectionLabel: Record<string, string> = {
+  blog: 'Blog',
+  guides: 'Guide',
+  glossary: 'Glossary',
+  compare: 'Comparison',
+};
 ---
 <BaseLayout
   title="TACTUN — Custom Control Systems for Intelligent Machines"
@@ -177,6 +194,30 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       </div>
     </div>
   </section>
+
+  <!-- Latest Insights -->
+  {latestInsights.length > 0 && (
+    <section class="section">
+      <div class="container">
+        <div class="section-header section-header--center fade-in">
+          <span class="label">Insights</span>
+          <h2>Field notes on <span class="accent">control electronics</span> for intelligent machines.</h2>
+        </div>
+        <div class="grid grid--3 fade-in">
+          {latestInsights.map((post) => (
+            <a href={`/${post.collection}/${post.slug}/`} class="card" style="text-decoration: none; display: block;">
+              <span class="label" style="font-size: 0.75rem;">{collectionLabel[post.collection]}</span>
+              <h3 class="card__title" style="font-size: 1.125rem; margin-top: 0.625rem; line-height: 1.35;">{post.data.title}</h3>
+              <p class="card__text" style="margin-top: 0.625rem;">{post.data.description}</p>
+              <p class="text-muted" style="font-size: 0.8125rem; margin-top: 0.875rem;">
+                {post.data.publishedDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+              </p>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
 
   <!-- CTA Section -->
   <section class="cta-section">
