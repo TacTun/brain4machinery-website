@@ -10,6 +10,10 @@
 - [About TACTUN](https://brain4machinery.com/about): 14 years of systems integration. 800+ controllers shipped. 2 US patents. Team behind the control spine for intelligent machines.
 - [Contact](https://brain4machinery.com/contact): Tell us about your machine. We deliver custom board architecture in 5 business days.
 
+## Guides
+
+- [FPGA + NVIDIA Jetson: hybrid control board for field robots](https://brain4machinery.com/guides/fpga-jetson-hybrid-architecture): A 2026 architecture guide for pairing FPGA real-time control with NVIDIA Jetson edge AI on one PCB — interconnects, safety, BOM trade-offs.
+
 ## Glossary
 
 - [What is an AI-native controller? A 2026 primer for robotics teams](https://brain4machinery.com/glossary/ai-native-controller-primer): Definition and architecture of AI-native controllers: FPGA real-time control paired with Jetson edge AI on one board, for autonomous machines.

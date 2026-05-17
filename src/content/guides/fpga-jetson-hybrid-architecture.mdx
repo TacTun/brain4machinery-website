@@ -1,11 +1,37 @@
-# TACTUN — brain4machinery.com — Full content snapshot
-
-Auto-generated. For citation by LLMs. Last regenerated: 2026-05-17T09:52:51.519Z
-
 ---
-url: https://brain4machinery.com/guides/fpga-jetson-hybrid-architecture
-title: FPGA + NVIDIA Jetson: hybrid control board for field robots
-description: A 2026 architecture guide for pairing FPGA real-time control with NVIDIA Jetson edge AI on one PCB — interconnects, safety, BOM trade-offs.
+title: "FPGA + NVIDIA Jetson: hybrid control board for field robots"
+description: "A 2026 architecture guide for pairing FPGA real-time control with NVIDIA Jetson edge AI on one PCB — interconnects, safety, BOM trade-offs."
+publishedDate: 2026-05-17
+author: "Rafayel Ghasabyan"
+primaryKeyword: "FPGA + Jetson architecture"
+secondaryKeywords:
+  - "FPGA + NVIDIA Jetson control board"
+  - "hybrid control architecture field robots"
+  - "deterministic real-time control board"
+  - "FPGA motor control for robotics"
+  - "PCB carrier board for NVIDIA Jetson for field robots"
+jsonLdType: "TechArticle"
+difficulty: "intermediate"
+estimatedReadMinutes: 14
+canonical: "https://brain4machinery.com/guides/fpga-jetson-hybrid-architecture"
+tlDr: "A field-robot controller needs sub-millisecond determinism for motors and safety, and tens of TOPS for perception. Split the workload: an FPGA closes the real-time loop, a Jetson Orin runs the AI, and a PCIe or SPI link bridges them on one PCB."
+faq:
+  - q: "What is an FPGA + Jetson hybrid controller?"
+    a: "A hybrid controller combines a Field-Programmable Gate Array for deterministic real-time tasks — motor PWM, encoder feedback, EtherCAT, safety interlocks — with an NVIDIA Jetson Orin module for AI workloads like perception, planning, and inference. The two sit on a single PCB connected by a deterministic interconnect such as PCIe, SPI, or UART. The split lets each device do what it does best: the FPGA delivers microsecond-jitter timing, the Jetson delivers tens of TOPS of GPU compute."
+  - q: "Why not just run real-time control on the Jetson?"
+    a: "Linux running on the Jetson cannot guarantee microsecond-class deadlines, even with the PREEMPT_RT patch. Published cyclictest results on PREEMPT_RT measure worst-case latencies of 15–23 µs, and Red Hat's formal analysis bounds it only in the single-digit milliseconds. ISO 13849-1 PL-d safety interlocks require a PFHd below 10⁻⁶ per hour, which Linux scheduling cannot meet. The FPGA exists to own that timing budget."
+  - q: "Which FPGA family fits a robotics carrier board in 2026?"
+    a: "For most field-robotics builds, Lattice ECP5 is the motion-control workhorse — 12K–84K LUTs, native PCIe and SerDes, and a fully open-source toolchain (Yosys + nextpnr). Lattice CrossLink-NX sits alongside ECP5 for MIPI camera aggregation. AMD/Xilinx Artix-7 enters when GTP transceivers or hard-IP PCIe Gen2 are essential. AMD/Xilinx Spartan-7 serves as a sub-watt safety co-processor on the same board."
+  - q: "How does the FPGA talk to the Jetson — PCIe, SPI, or UART?"
+    a: "PCIe Gen3 ×4 on the Jetson Orin Nano (or Gen4 on Orin NX) delivers up to ~4 GB/s with sub-2 µs MMIO latency — use it for DMA-heavy sensor streams. SPI at up to 50 MHz handles per-cycle setpoint exchange with deterministic, low-overhead transactions. UART carries the always-on safety side-channel and debug shell. Most production carriers run all three in parallel."
+  - q: "Where does the safety boundary go on an FPGA + Jetson board?"
+    a: "The FPGA. E-stop inputs, light-curtain channels, and gate-driver enables land on FPGA pins, not Jetson GPIO. The Jetson can request a safety transition via heartbeat; the Jetson cannot defer one. ISO 13849-1 PL-d (PFHd 10⁻⁷–10⁻⁶) and PL-e (PFHd < 10⁻⁷) require a bounded worst-case that Linux scheduling cannot deliver."
+  - q: "Which Jetson Orin module is right for a field robot?"
+    a: "Orin Nano 8GB (67 TOPS, 102 GB/s, 7–25 W) covers most single-camera perception workloads. Orin NX 16GB (157 TOPS, 102.4 GB/s, 10–40 W) is the sweet spot for multi-camera or VLM workloads inside a sealed IP-rated enclosure. AGX Orin (200–275 TOPS, 15–60 W) suits compute-heavy autonomy when the thermal design can shed 60 W in field conditions."
+  - q: "How does EtherCAT coexist with ROS 2 on the same controller?"
+    a: "The FPGA hosts an EtherCAT slave controller (ESC) IP core, so the board sits on an EtherCAT segment alongside Beckhoff or Synapticon drives. The Jetson runs ethercat_driver_ros2 (ICube-Robotics) as a ros2_control hardware interface on top of the IgH EtherCAT Master. A PREEMPT_RT kernel runs the master loop; PTP synchronizes EtherCAT distributed clocks with the ROS 2 timestamp domain."
+  - q: "When does a custom FPGA + Jetson PCB beat NI cRIO or Beckhoff CX?"
+    a: "Once production volume justifies amortizing the carrier-board NRE across shipped units, custom wins on per-unit cost and on design ownership. COTS systems like NI CompactRIO, Speedgoat, and Beckhoff CX impose per-chassis licensing and integration overhead that disappears on a custom carrier. The break-even depends on chassis count and feature mix; OEMs shipping at production scale almost always end up on a custom carrier."
 ---
 
 ## Why the split is forced
@@ -89,7 +115,7 @@ So the FPGA owns the safety boundary. The pattern is:
 - The FPGA holds the gate-driver enable signal. Releasing that enable requires both safety inputs healthy AND a 100 Hz heartbeat from the Jetson AND an explicit operator command latched at the FPGA.
 - Loss of any one input drops the enable in microseconds and shorts the motor windings via the gate driver's hardware brake input.
 
-The Jetson can ask the FPGA to *consider* a stop. The Jetson cannot ask the FPGA to *defer* a stop. That asymmetry is what makes the architecture safe — and the [AI-native controller primer](/glossary/ai-native-controller-primer) traces why this same asymmetry is what makes the AI side trustable in the first place.
+The Jetson can ask the FPGA to *consider* a stop. The Jetson cannot ask the FPGA to *defer* a stop. That asymmetry is what makes the architecture safe — and the same asymmetry is what makes the AI side trustable in the first place.
 
 ## Motor control and isolation
 
@@ -136,86 +162,3 @@ The engagement is built to remove the in-house tax. Board architecture is design
 ## Talk to us
 
 If you are standing up a field-robotics product and the FPGA + Jetson architecture above looks like the right shape — but you would rather not absorb 18–24 months of carrier-board development to get there — [contact us](/contact). We will look at the actuator list, the sensor mix, and the safety envelope, and tell you whether the spine we already build maps to your machine.
-
----
-url: https://brain4machinery.com/glossary/ai-native-controller-primer
-title: What is an AI-native controller? A 2026 primer for robotics teams
-description: Definition and architecture of AI-native controllers: FPGA real-time control paired with Jetson edge AI on one board, for autonomous machines.
----
-
-## The control architecture problem no one names clearly
-
-Most autonomous machines reach the market as a split architecture. A Jetson development kit handles perception. A PLC from a factory-automation vendor handles the servo and hydraulic loops. A handful of serial buses ties the two together. The result is functional enough for a lab demonstration — and not deterministic enough for a production deployment, because the latency between an AI model's output and an actuator's response is not bounded, not guaranteed, and not certifiable.
-
-The deeper problem is structural: neither half was designed to talk to the other. A factory PLC was not built to receive tensor outputs from a vision model. A Jetson dev kit was not built to close a servo current loop at sub-millisecond intervals. Both engineering teams — vision on one side, motion control on the other — end up writing glue code that absorbs the timing gap, hand-tuning interrupt priorities, and hoping the Linux scheduler cooperates. In production, it often doesn't. A firmware update to the AI stack introduces a processing spike of several milliseconds. The motion controller, never expecting that delay, overshoots an axis limit.
-
-Trusting the scheduler is not a plan. ROS 2, the middleware most Jetson deployments use, is a soft-real-time system. Even with PREEMPT_RT kernel patches, dedicated CPU cores, and elevated RT priorities, worst-case scheduling jitter on a loaded system stays in the hundreds of microseconds to single-digit milliseconds range. That is acceptable for planning a navigation path. It is not acceptable for a hydraulic cylinder actuating at 1 kHz, where a missed deadline means a jerked weld seam, an encoder overrun, or a tripped safety relay.
-
-Cloud offload does not fix the field-machine problem. An autonomous excavator on a remote construction site, an inspection robot inside a steel mill's EMI-dense environment, an agricultural sprayer covering field rows — none of these can absorb a network round-trip on every inference call. They need perception-to-control decisions within tens of milliseconds, locally, regardless of connectivity.
-
-The architecture that resolves all three constraints — deterministic timing, on-device AI compute, and offline resilience — has a name: the AI-native controller.
-
----
-
-## What an AI-native controller is
-
-An **AI-native controller** is a single PCB, or a tightly-coupled module stack, that integrates two computational elements with fundamentally different execution models:
-
-- **A deterministic real-time core** — almost always an FPGA, or an RTOS on an Arm Cortex-M or Cortex-R for simpler I/O-only designs — running motor control, safety interlocks, and sensor interfaces in hardware-scheduled logic with no operating system between the computation and the silicon.
-- **An on-device AI accelerator** — in 2026 designs, almost always an NVIDIA Jetson Orin-series module — running perception, state estimation, and planning workloads on a GPU-accelerated inference engine.
-
-The two sides share a low-latency interconnect: PCIe, a dedicated SPI or UART link, or a memory-mapped soft-core interface on the FPGA fabric. How many microseconds elapse between an AI model's output and a resulting control setpoint change is the central design discipline of the architecture. That number — the AI-to-actuator latency budget — is what distinguishes a well-designed AI-native controller from a Jetson bolted to a PLC with a UART in between.
-
-### The FPGA side: why hardware execution changes the timing equation
-
-FPGAs execute logic in parallel hardware, not in scheduled software threads. A mid-range device — such as a Lattice ECP5 in a 12–85K LUT configuration — running a motor-control state machine closes its loop in deterministic clock cycles. The loop period is set by the oscillator, not by a kernel timer interrupt. An EtherCAT slave stack implemented in FPGA fabric achieves cycle times below 100 µs with sub-µs jitter at the node, because the protocol logic runs in silicon rather than in a DMA interrupt handler.
-
-Safety logic belongs on the FPGA side. ISO 13849-1 Performance Level–rated hardware interlocks — the PL-d or PL-e output-disable circuits that autonomous machinery regulations require — execute on the FPGA regardless of the Jetson's state. If the AI module hangs mid-inference, the FPGA watchdog fires and cuts drive power within clock cycles. This hard separation of the safety boundary from the AI stack is one of the structural advantages of the AI-native architecture over a Jetson-only or Jetson-plus-PLC design.
-
-For motor drive, a TI DRV8353 3-phase gate driver (5.5–100 V operating range) on the FPGA's SPI bus closes a BLDC current loop at update rates no Linux process scheduler can sustain under load — the SPI transaction competes with nothing.
-
-### The Jetson side: inference at machine-compatible power budgets
-
-The Jetson Orin Nano (8 GB LPDDR5) delivers up to 67 TOPS of INT8 inference in a 7–25 W power envelope. The Jetson Orin NX (16 GB) reaches 157 TOPS with a 1024-core Ampere GPU and an 8-core Arm Cortex-A78AE CPU, packaged in the same 69.6 × 45 mm SO-DIMM-style module footprint as the Nano. A single carrier board can support both modules, so a team can validate hardware on the Orin Nano and scale to the Orin NX if the inference workload grows — without a new PCB spin.
-
-NVIDIA Isaac ROS provides hardware-accelerated perception packages — stereo depth estimation, object detection, pose estimation — that run directly on either module. In practice: the Orin Nano covers single-camera detection and lightweight navigation models. The Orin NX handles stereo-vision pipelines, point-cloud fusion from a LiDAR and IMU stack, or multi-modal models that combine visual and force-torque sensor inputs at production frame rates.
-
-### Programming model: two ecosystems, one board
-
-Legacy PLCs program in IEC 61131-3 languages — Ladder Diagram, Function Block Diagram, Structured Text. AI-native controller projects typically bypass those on the AI side. The Jetson runs C++, Python, or Rust, with TensorRT or CUDA for inference acceleration. The FPGA runs VHDL, SystemVerilog, or vendor HDL compiled by Lattice Radiant or Xilinx Vivado. If a customer's machine-builder team requires an IEC 61131-3 motion runtime on the FPGA side — to preserve compatibility with an existing HMI or motion library — that runtime can coexist with the AI pipeline. The perception and planning stack on the Jetson operates outside the IEC paradigm regardless.
-
-### Architecture comparison
-
-| Dimension | Legacy PLC | PC-based control | AI-native controller |
-|---|---|---|---|
-| Timing determinism | Hard (ASIC-based I/O, µs) | Soft (Linux, ms jitter) | Hard FPGA + soft AI-side |
-| AI compute density | None built-in | Add-in GPU required | 67–157 TOPS on-module |
-| I/O flexibility | Fixed at product specification | Moderate | Tailored per machine |
-| Software stack | IEC 61131-3, vendor-locked | Open (Linux) | Open on both sides |
-| Field ruggedization | Industrial-rated (EN 61131-2) | Low to moderate | Designed per application |
-| BOM cost per node | High (licensed runtime) | High (industrial GPU) | Optimized for production volume |
-
-### When you are in AI-native-controller territory
-
-Three conditions define the design space. If your machine satisfies all three, a purpose-built AI-native controller is the answer:
-
-1. **Edge inference at ≥1 TOPS** — vision, LiDAR processing, predictive actuator control, or any workload that saturates a microcontroller's processing budget.
-2. **A control loop at 1 kHz with sub-millisecond jitter** — servo axes, hydraulic proportional valves, force-control end-effectors, safety-rated emergency stops.
-3. **An IP-rated enclosure** — outdoor or industrial deployment where consumer-grade thermal design and ingress protection are inadequate.
-
-Meeting only condition 1: a Jetson dev kit or industrial PC may suffice. Meeting only condition 2: a standard PLC covers it at lower BOM cost. The AI-native controller pattern exists for machines that need all three simultaneously — and for which splitting the architecture across two separate vendor products introduces the integration risks described above.
-
----
-
-## How TACTUN designs AI-native controllers
-
-TACTUN designs the control spine — the [FPGA real-time control](/platform#capabilities) and Jetson AI layer that lets a customer's own perception and planning models command the machine without owning the board design. The [TACTUN platform](/platform) combines custom FPGA logic with NVIDIA Jetson edge AI on a single carrier board, with I/O tailored to each customer's specific sensors and actuators. Motor control covers servo, stepper, hydraulic, and pneumatic actuators. Safety logic and machine-state management execute on the FPGA side, keeping the Jetson's AI stack off the path to the machine's safety boundary.
-
-[TACTUN's founding engineers](/about) have shipped more than 800 controllers across prior companies and bring 14 years of systems-integration experience to each engagement. TACTUN delivers board architecture in 5 business days at $0 NRE — customers pay for production hardware, not the design session. Physical prototypes reach the customer's test bench in 3–5 months.
-
-Building an AI-native controller from scratch typically costs $900K–$2M+ and takes 18–24 months once board design, firmware, safety logic, prototyping, and production qualification are accounted for. Engaging a team that has already resolved the FPGA-to-Jetson interface, the I/O selection, and the production supply chain — across [use cases](/use-cases) spanning agricultural, construction, marine, and medical robotics — shortens both figures. TACTUN is an NVIDIA Inception Program member.
-
----
-
-Talk to us about your machine — describe the control loop timing, the inference workload, and the operating environment, and we will return a board architecture in 5 business days. [Start a conversation →](/contact)
-
