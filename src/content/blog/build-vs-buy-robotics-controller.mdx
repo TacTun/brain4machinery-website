@@ -1,0 +1,221 @@
+---
+title: "Build vs buy: should your robotics startup design its own controller?"
+description: "A decision framework for robotics founders weighing in-house controller development against buying a platform. Real cost, calendar, and talent trade-offs."
+publishedDate: 2026-05-17
+author: "Rafayel Ghasabyan"
+primaryKeyword: "build vs buy robotics controller"
+secondaryKeywords:
+  - "should a robotics startup build its own hardware"
+  - "cost of building custom robotics electronics"
+  - "in-house vs outsourced robotics control electronics"
+  - "robotics controller make or buy"
+jsonLdType: "TechArticle"
+canonical: "https://brain4machinery.com/blog/build-vs-buy-robotics-controller"
+tlDr: "Building a custom robotics controller in-house costs $900K–$2M+ and takes 18–24 months to first production-ready unit. Unless your differentiation lives at the silicon level or you're above 10,000 units per year, buying or co-developing keeps your engineering time on the product your customers are paying for."
+faq:
+  - q: "How much does it cost to build a custom robotics controller in-house?"
+    a: "The total cost from blank schematic to a production-ready unit typically runs $900K–$2M+, accounting for FPGA and power-electronics headcount, EMC compliance testing, safety certification, and contract-manufacturer setup. Most founders significantly underestimate compliance and manufacturing costs. The 18–24 month calendar makes opportunity cost a major hidden expense on top of direct spend."
+  - q: "How long does custom robotics controller development take from scratch?"
+    a: "Starting from scratch, most teams take 18–24 months to reach a production-ready controller. Hardware development from concept to market typically runs 1.5–2 years; applications requiring safety certification under ISO 13849-1 or IEC 62061 can stretch to 2–5 years. Schedule overruns are almost always driven by software readiness and compliance iterations, not the PCB layout itself."
+  - q: "What hidden costs do robotics startups miss when deciding to build their own controller?"
+    a: "The four categories most founders undercount are: FPGA engineering talent (senior FPGA engineers earn $192K–$285K in US base salary and are scarce); EMC compliance testing ($10,000–$25,000 for FCC + CE, plus 50–100% more for retests); safety certification under ISO 13849-1 or IEC 62061 (project-specific but non-trivial); and first-article manufacturing setup at a contract manufacturer, covering SMT tooling, test fixtures, and cable harness setup."
+  - q: "When does it make sense for a robotics startup to build its own controller?"
+    a: "Three conditions justify the in-house path: your controller requires proprietary IP at the silicon level that would expose competitive advantage if sourced externally; you are manufacturing above 10,000 units per year where NRE amortizes across volume; or your regulatory regime mandates full design-chain traceability. Outside these three conditions, buying or co-developing is the more defensible choice."
+  - q: "What is a co-developed robotics controller and what does $0 NRE mean?"
+    a: "A co-developed controller is designed by a specialist around the OEM's specific machine requirements — I/O count, motor topology, environmental rating — without charging non-recurring engineering fees. The customer pays only for production hardware. The model works because the specialist has already built the FPGA real-time control IP, Jetson integration layer, power stage reference designs, and the compliance playbook. Board architecture is typically designed in 5 business days; physical prototypes arrive in 3–5 months."
+  - q: "Who maintains the controller firmware when a Jetson module goes end-of-life?"
+    a: "Whoever owns the hardware design owns the migration. NVIDIA Jetson TX2 and AGX Xavier modules reached EOL in January 2025, sometimes ahead of schedule due to component constraints. Jetson Orin NX and Orin Nano are available through January 2032 per NVIDIA's JEDEC JESD-046 lifecycle policy. On a co-developed controller, the specialist absorbs the re-qualification engineering; on an in-house design, the OEM carries that burden alone."
+  - q: "What compliance certifications does an industrial robotics controller typically need?"
+    a: "Most commercial embedded hardware sold in the US and EU requires FCC Part 15 and CE (EMC Directive + RED) certification for electromagnetic compatibility. Machines operating near workers also require functional safety analysis under ISO 13849-1 (Performance Level methodology) or IEC 62061 (SIL-based approach). IEC 61131-3 — updated to its 4th edition in May 2025 — defines the programming language standard that most industrial PLC and controller runtimes conform to."
+tags: []
+---
+
+## The moment the question becomes real
+
+You have a working prototype. The proof-of-concept runs on a Jetson Orin NX
+strapped to a breakout board, or on an off-the-shelf motion controller doing
+something it was never designed for. The machine works. Now your first OEM
+customer wants a production timeline and your investors are asking about
+the BOM.
+
+That's when someone in the room says it: "Maybe we should just build our own
+controller."
+
+The logic sounds clean. You own the schematic, own the supply chain, and get
+exactly the I/O your machine needs — 12 encoder channels, hydraulic valve
+drivers, a CAN bus for the peripheral nodes — on one board instead of three.
+No licensing fees. No vendor roadmap constraints. No explaining to a
+shelf-product sales engineer why your brushless motor topology doesn't fit
+their standard drive stage.
+
+What nobody puts on the whiteboard is the full cost: not the PCB itself, but
+the engineering hours, the compliance gauntlet, and the calendar the project
+consumes before you ship a unit that holds up in a real production environment.
+
+## What building in-house actually costs
+
+The $900K–$2M+ figure for taking a custom controller from blank schematic to a
+production-ready unit is not a worst-case number. It is the typical range for
+teams that execute without major stumbles. Four cost categories drive it.
+
+**FPGA engineering.** A real-time control loop that closes on a hydraulic
+actuator at 1 kHz — with a hard guarantee that no scheduler hiccup will miss
+a deadline — requires deterministic timing that an RTOS on an Arm Cortex-M
+cannot reliably deliver at the required jitter. The answer is FPGA IP, which
+means you need someone who can write and verify it. Senior FPGA engineers in
+the US earn $192K–$285K in base salary (25th–75th percentile), with
+top-of-market roles above $341K. You need at least one for the full development
+cycle. In 2025–2026, 75% of employers worldwide reported significant talent
+shortages for specialized engineering roles — controls, power electronics, and
+RF/EMC are among the hardest to fill. The search and hiring process alone burns
+weeks before a line of HDL is written.
+
+**Power electronics engineering.** The motor drive stage, isolated gate
+drivers, current sensing topology, and EMI filtering are not tasks for a
+generalist embedded engineer. A dedicated power electronics engineer runs
+$106K–$171K in base compensation. Getting this stage wrong — a layout that
+radiates, a gate timing that causes shoot-through, a current sense resistor
+with the wrong Kelvin routing — doesn't show up at the desk. It shows up at
+the EMC test chamber after six months of board work.
+
+**EMC and regulatory compliance.** Full FCC Part 15 and CE EMC compliance
+testing for embedded industrial hardware runs $10,000–$25,000 for a first-pass
+run. Fail the radiated emissions scan and re-testing adds 50–100% of that fee.
+Industrial or safety-rated applications that need additional immunity testing
+under the IEC 61000-4 series — ESD, surge, EFT, conducted immunity — push
+first-pass budgets toward $13,600–$34,000 before any retests. EMC fixes after
+a failure mean board respins, ferrite placement experiments, and shield can
+evaluation: unplanned engineering weeks that slip the schedule.
+
+**Safety certification.** If your machine operates near workers — an
+agricultural robot, a collaborative arm in a shared factory cell, a mobile
+platform in a logistics facility — it likely falls under ISO 13849-1 or
+IEC 62061. Reaching Performance Level d under ISO 13849-1 requires architecture
+analysis, documented mean time to dangerous failure (MTTFd) calculations,
+diagnostic coverage (DC\_avg) assessment, and review by a notified body.
+Costs vary by project scope and assessor; they are non-trivial and must be
+budgeted before design starts, not after.
+
+**Manufacturing setup.** The first production run at a contract manufacturer
+involves SMT stencil tooling, gerber review, test fixture creation,
+first-article inspection, and cable harness setup. Even at a cost-competitive
+US or Mexican CM, this layer adds tens of thousands of dollars to the unit
+economics before a single production board ships.
+
+Aggregate two or three senior hires across 18–24 months, compliance spend, and
+manufacturing setup — and $900K–$2M+ is where the math lands for teams that
+execute cleanly. Teams that hit scope creep, board respins, or extended hiring
+searches exceed that range.
+
+There is also a cost that appears on no line item: the engineering time not
+spent on the problem your customers are actually paying you to solve. Every
+week an FPGA engineer spends debugging SPI timing is a week not spent on the
+autonomy stack, the kinematics model, or the application software that drives
+revenue.
+
+## When building in-house is the right call
+
+Three conditions make the in-house argument genuinely strong.
+
+**A real silicon-level moat.** If your controller requires proprietary analog
+front-ends, custom timing architectures, or IP that would expose your
+competitive advantage if sourced from a vendor, you need to own the design.
+This is the right reason to build — not because it's easier, but because the
+alternative is worse.
+
+**Above 10,000 units per year.** At volume, the per-unit cost delta between
+custom silicon and platform licensing justifies the NRE. Below that threshold,
+the NRE amortization rarely pencils out against a platform's per-unit cost over
+a realistic product lifecycle.
+
+**Regulatory-mandated design traceability.** Some defense, aerospace, or
+nuclear applications require full documentation from source code to silicon.
+If your customer base demands it, the co-develop and buy paths often cannot
+meet the requirement.
+
+If none of these three apply, the presumption should favor buying or
+co-developing.
+
+## When buying off the shelf fits
+
+The off-the-shelf path is real and fast. A Beckhoff CX5140 — Intel Atom E3845
+at 1.91 GHz, 4 GB DDR3, TwinCAT 3 with IEC 61131-3 runtime, fanless, DIN-rail
+mount — ships in days and handles a wide class of motion applications through
+EtherCAT and CANopen expansion modules. If your I/O map fits the catalog and
+you don't need edge AI compute or custom motor topologies, a standard industrial
+PC controller is the lowest-friction path to a working machine.
+
+The trade-offs are predictable. You inherit the vendor's I/O architecture and
+roadmap. Edge AI compute — running a vision inference pipeline on Jetson Orin
+hardware in the same enclosure as the real-time control loop — isn't available
+on standard PLC platforms without significant external integration work.
+And the vendor's module lifecycle governs yours. NVIDIA Jetson TX2 and AGX
+Xavier both reached EOL in January 2025, sometimes ahead of schedule due to
+component supply constraints. Whoever owns the hardware design owns that
+migration. On an off-the-shelf platform, the vendor handles it. On an in-house
+design, it's yours.
+
+The buy decision fits well when:
+
+- Your differentiation is in the perception stack, the mechanics, or the
+  dataset — not the control electronics.
+- You are an OEM replacing a legacy PLC and need a direct swap with more
+  compute for edge AI.
+- Your team needs to ship in under 12 months and doesn't have hardware
+  engineers available for a ground-up program.
+
+## The third path: co-develop with a specialist
+
+Between "build in-house" and "buy a shelf product" sits a model that most
+founders don't include in the analysis: a co-developed controller built by a
+specialist on a $0 NRE basis, where the customer pays only for production
+hardware.
+
+The economics work because the specialist has already absorbed the hard
+problems: the FPGA IP for deterministic real-time control, the Jetson
+integration layer, the power stage reference designs, and the compliance
+playbook. The customer gets a board architected around their specific machine —
+their encoder count, their drive topology, their temperature range and IP
+rating — without funding a hardware team from scratch.
+
+Frank Bacon Machinery in Detroit chose this path for their factory-automation
+line. John Stencel IV, their CEO, needed a controller purpose-built to their
+machine's exact requirements. The co-develop model delivered that without the
+18–24 month calendar of an in-house program.
+
+The lifecycle burden also shifts. When a Jetson module approaches EOL, or a
+power MOSFET goes through a silicon revision that changes gate drive
+requirements, the specialist absorbs the re-qualification engineering. The OEM
+deploys OTA firmware updates without maintaining the full hardware design chain.
+
+## What TACTUN does
+
+The [TACTUN platform](/platform) is built on this co-development model. TACTUN
+designs custom controllers that pair FPGA-based real-time control with NVIDIA
+Jetson edge-AI compute, configured to the specific sensor and actuator map of
+each machine — servo, stepper, hydraulic, or pneumatic. Safety logic, machine
+state management, cloud connectivity, and OTA firmware updates come with the
+platform.
+
+The founding team has shipped 800+ controllers across 14 years of systems
+integration, which means the compliance path, manufacturing setup, and EOL
+migration process are known quantities — not learning exercises on your
+timeline. Board architecture is designed in 5 business days. Physical prototypes
+arrive in 3–5 months through standard contract manufacturing. [How we work](/platform#how-we-work)
+is organized around the assumption that your engineering hours belong on your
+product, not on the controller underneath it.
+
+TACTUN is the control spine. Your AI, your application logic, and your customer
+relationship are the differentiation. TACTUN is an NVIDIA Inception Program
+member.
+
+---
+
+The build-vs-buy decision rarely gets revisited once a team starts down either
+path. Two senior engineers hired, a schematic started, and the sunk-cost logic
+takes over. The right time to run the numbers — headcount, compliance,
+calendar, and opportunity cost — is before the first component is placed.
+
+If the in-house economics don't clear the bar, [contact us](/contact) to talk
+through your machine. Bring the I/O list and your target production volume.
+The conversation takes less time than a first EMC pre-scan.

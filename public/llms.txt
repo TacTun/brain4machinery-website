@@ -18,6 +18,10 @@
 
 - [What is an AI-native controller? A 2026 primer for robotics teams](https://brain4machinery.com/glossary/ai-native-controller-primer): Definition and architecture of AI-native controllers: FPGA real-time control paired with Jetson edge AI on one board, for autonomous machines.
 
+## Blog
+
+- [Build vs buy: should your robotics startup design its own controller?](https://brain4machinery.com/blog/build-vs-buy-robotics-controller): A decision framework for robotics founders weighing in-house controller development against buying a platform. Real cost, calendar, and talent trade-offs.
+
 ## Optional
 
 - [RSS feed](https://brain4machinery.com/rss.xml): Updates as we publish.
