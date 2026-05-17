@@ -1,11 +1,44 @@
-# TACTUN — brain4machinery.com — Full content snapshot
-
-Auto-generated. For citation by LLMs. Last regenerated: 2026-05-17T08:03:29.922Z
-
 ---
-url: https://brain4machinery.com/glossary/ai-native-controller-primer
-title: What is an AI-native controller? A 2026 primer for robotics teams
-description: Definition and architecture of AI-native controllers: FPGA real-time control paired with Jetson edge AI on one board, for autonomous machines.
+title: "What is an AI-native controller? A 2026 primer for robotics teams"
+description: "Definition and architecture of AI-native controllers: FPGA real-time control paired with Jetson edge AI on one board, for autonomous machines."
+publishedDate: 2026-05-17
+author: "Rafayel Ghasabyan"
+primaryKeyword: "what is an AI-native controller"
+secondaryKeywords:
+  - "AI-native control platform"
+  - "AI-native controller for robotics"
+  - "control electronics for robotics startups"
+  - "FPGA + Jetson architecture"
+jsonLdType: "DefinedTerm"
+term: "AI-native controller"
+relatedTerms:
+  - "FPGA controller"
+  - "Jetson carrier board"
+  - "deterministic real-time control"
+  - "edge AI inference"
+tlDr: >-
+  An AI-native controller pairs a deterministic FPGA core with an on-device AI
+  accelerator (NVIDIA Jetson Orin) on a single PCB. The FPGA closes
+  sub-millisecond control loops while the Jetson runs inference at up to
+  157 TOPS — so perception can drive actuators without missing timing deadlines.
+faq:
+  - q: "What is an AI-native controller?"
+    a: "An AI-native controller is a single PCB — or tightly coupled module stack — that pairs a deterministic real-time core (typically an FPGA) with an on-device AI accelerator (typically an NVIDIA Jetson Orin module). The two sides share a low-latency interconnect so perception and planning outputs can influence the control loop without violating its timing budget."
+  - q: "Why can't a Jetson alone handle real-time machine control?"
+    a: "ROS 2 on Linux is a soft-real-time system. Even with PREEMPT_RT kernel patches, dedicated CPU cores, and elevated RT priorities, worst-case scheduling jitter stays in the hundreds of microseconds to single-digit milliseconds. A hydraulic or servo axis that needs a 1 kHz feedback loop with sub-millisecond jitter cannot tolerate that variability — and the situation worsens when AI inference competes for CPU and memory bandwidth."
+  - q: "What does the FPGA do in an AI-native controller?"
+    a: "The FPGA runs hardware-deterministic logic: motor-control state machines, EtherCAT slave stacks (cycle times below 100 µs), hardware safety interlocks rated to ISO 13849-1, and encoder or sensor interfaces. Because the logic executes in silicon rather than in scheduled software threads, it is immune to OS scheduler variability regardless of what the Jetson is doing."
+  - q: "Why not use cloud AI instead of on-device inference?"
+    a: "Field machines frequently operate beyond reliable network coverage — autonomous excavators far from cellular towers, inspection robots in RF-dense industrial environments, agricultural machines in rural terrain. Cloud-dependent AI introduces tens to hundreds of milliseconds of network latency and fails completely offline. On-device inference with Jetson Orin keeps the perception-to-control path within the machine's timing budget regardless of connectivity."
+  - q: "Which NVIDIA Jetson modules are used in AI-native controllers?"
+    a: "The Jetson Orin Nano (8 GB LPDDR5, up to 67 TOPS INT8, 7–25 W) and Jetson Orin NX (16 GB, up to 157 TOPS with a 1024-core Ampere GPU, 10–25 W) are the 2026 baselines. Both share the same 69.6 × 45 mm SO-DIMM module footprint, so a single carrier-board design can support both — qualifying hardware on the Nano and scaling to the NX if the AI workload grows."
+  - q: "How is an AI-native controller different from an industrial PLC?"
+    a: "A legacy PLC offers hard real-time control via ASIC-based I/O and runs IEC 61131-3 code (Ladder Diagram, Structured Text), but carries no built-in AI compute. An AI-native controller preserves the hard real-time guarantee on the FPGA side while adding up to 157 TOPS of AI inference on the Jetson side, with an open software stack on both — C++, Python, and Rust on the AI side; VHDL or SystemVerilog on the deterministic side."
+  - q: "When should a robotics team choose an AI-native controller?"
+    a: "Use the three-condition heuristic: your machine needs ≥1 TOPS of edge inference AND a control loop closing at 1 kHz with sub-millisecond jitter AND an IP-rated enclosure for outdoor or industrial use. Meeting only one or two conditions may let a simpler architecture suffice — a dev-kit Jetson for AI-only, a standard PLC for motion-only."
+  - q: "What does it cost to build an AI-native controller in-house?"
+    a: "Building a custom controller from scratch typically costs $900K–$2M+ and takes 18–24 months, once board design, firmware, safety logic, prototyping, and production qualification are accounted for. Partnering with a team that has already solved the FPGA-to-Jetson interface and the production supply chain compresses both figures."
+canonical: "https://brain4machinery.com/glossary/ai-native-controller-primer"
 ---
 
 ## The control architecture problem no one names clearly
@@ -83,4 +116,3 @@ Building an AI-native controller from scratch typically costs $900K–$2M+ and t
 ---
 
 Talk to us about your machine — describe the control loop timing, the inference workload, and the operating environment, and we will return a board architecture in 5 business days. [Start a conversation →](/contact)
-
