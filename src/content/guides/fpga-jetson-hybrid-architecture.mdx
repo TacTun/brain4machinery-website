@@ -115,7 +115,7 @@ So the FPGA owns the safety boundary. The pattern is:
 - The FPGA holds the gate-driver enable signal. Releasing that enable requires both safety inputs healthy AND a 100 Hz heartbeat from the Jetson AND an explicit operator command latched at the FPGA.
 - Loss of any one input drops the enable in microseconds and shorts the motor windings via the gate driver's hardware brake input.
 
-The Jetson can ask the FPGA to *consider* a stop. The Jetson cannot ask the FPGA to *defer* a stop. That asymmetry is what makes the architecture safe — and the [AI-native controller primer](/glossary/ai-native-controller-primer) traces why this same asymmetry is what makes the AI side trustable in the first place.
+The Jetson can ask the FPGA to *consider* a stop. The Jetson cannot ask the FPGA to *defer* a stop. That asymmetry is what makes the architecture safe — and the same asymmetry is what makes the AI side trustable in the first place.
 
 ## Motor control and isolation
 
