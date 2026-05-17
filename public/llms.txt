@@ -1,0 +1,16 @@
+# TACTUN — brain4machinery.com
+
+> TACTUN designs AI-native control electronics for robots, autonomous machines, and intelligent industrial equipment. Custom FPGA + NVIDIA Jetson controller boards. Board architecture in 5 business days. You pay nothing for the design.
+
+## Core pages
+
+- [TACTUN — Custom Control Systems for Intelligent Machines](https://brain4machinery.com/): AI-native controller boards. Board architecture in 5 days. Zero NRE.
+- [Platform & Technology](https://brain4machinery.com/platform): FPGA real-time deterministic control + NVIDIA Jetson AI compute on a single PCB.
+- [Use Cases](https://brain4machinery.com/use-cases): AI-native control across agriculture, construction, marine, medical, inspection, food & logistics, solar, materials testing.
+- [About TACTUN](https://brain4machinery.com/about): 14 years of systems integration. 800+ controllers shipped. 2 US patents. Team behind the control spine for intelligent machines.
+- [Contact](https://brain4machinery.com/contact): Tell us about your machine. We deliver custom board architecture in 5 business days.
+
+## Optional
+
+- [RSS feed](https://brain4machinery.com/rss.xml): Updates as we publish.
+- [Sitemap](https://brain4machinery.com/sitemap-index.xml): Full site index.

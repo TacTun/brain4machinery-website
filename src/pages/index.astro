@@ -1,0 +1,190 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+<BaseLayout
+  title="TACTUN — Custom Control Systems for Intelligent Machines"
+  description="TACTUN designs AI-native controller boards tailored to your machine. Board architecture in 5 days. You pay nothing for the design."
+  active=""
+>
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero__inner">
+        <div class="hero__content">
+          <h1>Custom Control Systems for <span class="accent">Intelligent Machines</span></h1>
+          <p class="sub">We design AI-native controller boards tailored to your machine. Board architecture in 5 days. You pay nothing for the design.</p>
+          <div class="hero__buttons">
+            <a href="/contact" class="btn btn--primary">Request a Quote</a>
+            <a href="/platform" class="btn btn--secondary">See the Platform</a>
+          </div>
+        </div>
+        <div class="hero__image">
+          <img src="/assets/board_jetson.jpg" alt="TACTUN AI-native controller board with NVIDIA Jetson" width="560" height="420" loading="eager">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pain Points -->
+  <section class="section section--alt">
+    <div class="container">
+      <div class="section-header section-header--center fade-in">
+        <h2>Building the control system is the <span class="accent">hardest part</span> of building a machine.</h2>
+      </div>
+      <div class="grid grid--3 fade-in">
+        <div class="card card--alt">
+          <div class="pain__number">18-24 mo</div>
+          <div class="pain__label">Time to Market</div>
+          <p class="card__text">To design, test, and produce custom control electronics. That's before your product ships a single unit.</p>
+        </div>
+        <div class="card card--alt">
+          <div class="pain__number">$900K-$2M+</div>
+          <div class="pain__label">In-House Cost</div>
+          <p class="card__text">For an in-house hardware team &mdash; and that's if you can even recruit FPGA engineers.</p>
+        </div>
+        <div class="card card--alt">
+          <div class="pain__number">5+ systems</div>
+          <div class="pain__label">Complexity</div>
+          <p class="card__text">Motor control, safety logic, sensor fusion, AI compute, operator software &mdash; all on one board. Legacy PLCs can't do this.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Solution Overview -->
+  <section class="section">
+    <div class="container">
+      <div class="section-header fade-in">
+        <span class="label">The Solution</span>
+        <h2>One board. <span class="accent">Designed for your machine.</span></h2>
+      </div>
+      <div class="grid grid--2" style="align-items: center;">
+        <div class="steps fade-in">
+          <div class="step">
+            <div class="step__number">1</div>
+            <div class="step__content">
+              <h4>Tell us about your machine</h4>
+              <p>We start with your requirements &mdash; sensors, actuators, AI compute, safety, form factor.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step__number">2</div>
+            <div class="step__content">
+              <h4>We design the architecture in 5 days</h4>
+              <p>A fully custom board design combining FPGA real-time control with NVIDIA Jetson AI compute &mdash; tailored to your exact needs.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step__number">3</div>
+            <div class="step__content">
+              <h4>You get production-ready hardware</h4>
+              <p>We handle manufacturing. You get boards ready to integrate into your machine. No R&amp;D cost &mdash; you pay only for production units.</p>
+            </div>
+          </div>
+        </div>
+        <div class="fade-in" style="display: flex; justify-content: center;">
+          <img src="/assets/board_clean.jpg" alt="TACTUN custom controller board" style="border-radius: 12px; box-shadow: 0 12px 40px rgba(0,0,0,0.12); max-height: 380px; object-fit: cover;" width="480" height="380" loading="lazy">
+        </div>
+      </div>
+      <div style="margin-top: 2rem;">
+        <a href="/platform" class="btn btn--ghost">Explore the platform</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Use Cases Preview -->
+  <section class="section section--alt">
+    <div class="container">
+      <div class="section-header section-header--center fade-in">
+        <h2>Built for the machines that are <span class="accent">changing every industry.</span></h2>
+      </div>
+      <div class="grid grid--3 fade-in">
+        <div class="card">
+          <div class="card__icon">&#x1F33E;</div>
+          <div class="card__title">Agricultural Robotics</div>
+          <p class="card__text">Autonomous navigation, implement control, and GPS precision across rugged terrain.</p>
+        </div>
+        <div class="card">
+          <div class="card__icon">&#x1F3D7;</div>
+          <div class="card__title">Construction &amp; Mining</div>
+          <p class="card__text">Ruggedized control for autonomous excavators, loaders, and inspection platforms.</p>
+        </div>
+        <div class="card">
+          <div class="card__icon">&#x1F30A;</div>
+          <div class="card__title">Marine &amp; Underwater</div>
+          <p class="card__text">Pressure-tolerant electronics with sonar processing, thruster control, and autonomous navigation at depth.</p>
+        </div>
+        <div class="card">
+          <div class="card__icon">&#x2695;</div>
+          <div class="card__title">Medical &amp; Surgical</div>
+          <p class="card__text">Ultra-low-latency real-time computing for surgical navigation and robotic instruments.</p>
+        </div>
+        <div class="card">
+          <div class="card__icon">&#x1F50D;</div>
+          <div class="card__title">Inspection &amp; Maintenance</div>
+          <p class="card__text">Stable flight control with contact mechanics for drones performing NDT at height.</p>
+        </div>
+        <div class="card">
+          <div class="card__icon">&#x1F4E6;</div>
+          <div class="card__title">Food &amp; Logistics</div>
+          <p class="card__text">Vision-guided manipulation, precise motor control, and hygiene-rated enclosures for kitchen and warehouse automation.</p>
+        </div>
+      </div>
+      <div style="text-align: center; margin-top: 2rem;" class="fade-in">
+        <a href="/use-cases" class="btn btn--ghost">See all use cases</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Social Proof -->
+  <section class="section">
+    <div class="container">
+      <div class="section-header section-header--center fade-in">
+        <h2>Trusted by teams building <span class="accent">the next generation</span> of intelligent machines.</h2>
+      </div>
+      <div class="grid grid--2 fade-in">
+        <div class="testimonial">
+          <div class="testimonial__quote">TACTUN took our requirements and delivered a complete controller solution that transformed how we build our machines. Starting with 30 controllers, we're now migrating our full product line to the TACTUN platform.</div>
+          <div class="testimonial__author">John Stencel IV</div>
+          <div class="testimonial__role">CEO, Frank Bacon Machinery &mdash; Detroit, USA</div>
+        </div>
+        <div class="testimonial">
+          <div class="testimonial__quote">TACTUN is a key technology partner for us. Their ability to deliver custom control electronics that integrate seamlessly with our testing systems has been critical to our product roadmap.</div>
+          <div class="testimonial__author">Pat Griffin</div>
+          <div class="testimonial__role">Founder, Rheology Solutions</div>
+        </div>
+      </div>
+      <p class="proof-line fade-in">800+ controllers shipped across precision machinery, energy, and automotive.</p>
+    </div>
+  </section>
+
+  <!-- Backers -->
+  <section class="section backers">
+    <div class="container">
+      <div class="backers__inner fade-in">
+        <span class="label">Backed by</span>
+        <div class="backers__row">
+          <a href="https://tactun.com/tactun-joins-nvidia-inception-program/" class="backers__logo backers__logo--nvidia" target="_blank" rel="noopener" aria-label="Read about TACTUN joining the NVIDIA Inception Program">
+            <img src="/assets/NVIDIA-Logo-Inception.png" alt="NVIDIA Inception Program" loading="lazy">
+          </a>
+          <a href="https://tactun.com/tactun-showcased-at-plug-and-play-armenia-demo-day/" class="backers__logo backers__logo--plug" target="_blank" rel="noopener" aria-label="Read about TACTUN at the Plug and Play Armenia Demo Day">
+            <img src="/assets/Logo_Plug_and_Play_New.png" alt="Plug and Play" loading="lazy">
+          </a>
+          <a href="https://tactun.com/tactun-announces-investment-from-smartgatevc/" class="backers__logo backers__logo--smartgate" target="_blank" rel="noopener" aria-label="Read about TACTUN's investment from SmartGateVC">
+            <img src="/assets/SG_Logo_6.png" alt="SmartGateVC" loading="lazy">
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta-section">
+    <div class="container fade-in">
+      <h2>Building an <span class="accent">intelligent machine?</span></h2>
+      <p>Tell us about your project. We'll show you how a custom TACTUN controller can work for your machine.</p>
+      <a href="/contact" class="btn btn--primary">Request a Quote</a>
+      <span class="cta-alt">Or email us at <a href="mailto:contact@tactun.com">contact@tactun.com</a></span>
+    </div>
+  </section>
+</BaseLayout>

@@ -1,0 +1,97 @@
+---
+import '../styles/global.css';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import JsonLd from '../components/seo/JsonLd.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  active?: string;
+  canonical?: string;
+  ogImage?: string;
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+  noIndex?: boolean;
+}
+
+const {
+  title,
+  description,
+  active = '',
+  canonical,
+  ogImage = '/assets/board_jetson.jpg',
+  jsonLd,
+  noIndex = false,
+} = Astro.props;
+
+const siteUrl = 'https://brain4machinery.com';
+const canonicalUrl = canonical || new URL(Astro.url.pathname, siteUrl).toString();
+const ogImageUrl = new URL(ogImage, siteUrl).toString();
+
+const orgJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'TACTUN',
+  alternateName: 'brain4machinery',
+  url: siteUrl,
+  logo: `${siteUrl}/assets/logo.png`,
+  description:
+    'TACTUN designs AI-native controller boards tailored to your machine. Board architecture in 5 days. You pay nothing for the design.',
+  email: 'contact@tactun.com',
+  sameAs: [
+    'https://www.linkedin.com/company/tactun',
+    'https://www.youtube.com/@tactunplatform',
+    'https://tactun.com',
+  ],
+};
+
+const websiteJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'brain4machinery — TACTUN',
+  url: siteUrl,
+};
+---
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl} />
+    {noIndex && <meta name="robots" content="noindex,nofollow" />}
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:site_name" content="TACTUN — brain4machinery" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageUrl} />
+
+    <link rel="icon" type="image/png" href="/assets/logo.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <JsonLd data={orgJsonLd} />
+    <JsonLd data={websiteJsonLd} />
+    {jsonLd && <JsonLd data={jsonLd} />}
+  </head>
+  <body>
+    <Nav active={active} />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+    <script is:inline src="/scripts/main.js"></script>
+  </body>
+</html>

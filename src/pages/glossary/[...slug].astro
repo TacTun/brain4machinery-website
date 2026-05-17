@@ -1,0 +1,38 @@
+---
+import { getCollection } from 'astro:content';
+import ArticleLayout from '../../layouts/ArticleLayout.astro';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('glossary', ({ data }) => !data.draft);
+  return posts.map((post) => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content } = await post.render();
+const { data } = post;
+
+const definedTermJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'DefinedTerm',
+  name: data.term,
+  description: data.description,
+  url: new URL(Astro.url.pathname, 'https://brain4machinery.com').toString(),
+};
+---
+<ArticleLayout
+  title={data.title}
+  description={data.description}
+  publishedDate={data.publishedDate}
+  updatedDate={data.updatedDate}
+  author={data.author}
+  jsonLdType={data.jsonLdType}
+  tlDr={data.tlDr}
+  faq={data.faq}
+  canonical={data.canonical}
+>
+  <script type="application/ld+json" set:html={JSON.stringify(definedTermJsonLd)} />
+  <Content />
+</ArticleLayout>

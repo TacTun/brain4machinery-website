@@ -1,0 +1,46 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+<BaseLayout
+  title="Contact — TACTUN"
+  description="Tell us about your machine. Whether you're building a robot or adding intelligence to an existing product, we'd love to hear from you."
+  active=""
+>
+  <!-- Contact -->
+  <section class="section" style="padding-top: calc(72px + 4rem);">
+    <div class="container">
+      <div class="contact-split">
+        <div class="contact-info fade-in">
+          <h1>Let's talk about <span class="accent">your machine.</span></h1>
+          <p>Whether you're building a robot, adding intelligence to an existing product, or just exploring what's possible &mdash; we'd love to hear from you.</p>
+          <div class="contact-alt">
+            <p>Prefer email? Reach us at <a href="mailto:contact@tactun.com" style="font-weight: 600;">contact@tactun.com</a></p>
+            <p style="margin-top: 1.5rem;">For materials testing inquiries, visit <a href="https://tactun.com" target="_blank" rel="noopener" style="font-weight: 600;">tactun.com</a></p>
+          </div>
+        </div>
+        <div class="fade-in">
+          <form id="contact-form" action="/api/contact" method="POST">
+            <div class="form__group">
+              <label for="name" class="form__label">Name</label>
+              <input type="text" id="name" name="name" class="form__input" required autocomplete="name">
+            </div>
+            <div class="form__group">
+              <label for="email" class="form__label">Email</label>
+              <input type="email" id="email" name="email" class="form__input" required autocomplete="email">
+            </div>
+            <div class="form__group">
+              <label for="company" class="form__label">Company <span class="form__optional">(optional)</span></label>
+              <input type="text" id="company" name="company" class="form__input" autocomplete="organization">
+            </div>
+            <div class="form__group">
+              <label for="message" class="form__label">Tell us about your project</label>
+              <textarea id="message" name="message" class="form__textarea" required placeholder="What kind of machine are you building? What sensors, actuators, or AI capabilities do you need?"></textarea>
+            </div>
+            <button type="submit" class="btn btn--primary form__submit">Send Message</button>
+            <div id="form-status" class="form__status"></div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

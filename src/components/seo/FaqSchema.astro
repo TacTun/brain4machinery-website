@@ -1,0 +1,49 @@
+---
+interface FaqItem {
+  q: string;
+  a: string;
+}
+interface Props {
+  items: FaqItem[];
+  renderVisible?: boolean;
+}
+const { items, renderVisible = true } = Astro.props;
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: items.map((item) => ({
+    '@type': 'Question',
+    name: item.q,
+    acceptedAnswer: {
+      '@type': 'Answer',
+      text: item.a,
+    },
+  })),
+};
+---
+<script type="application/ld+json" set:html={JSON.stringify(schema)} />
+
+{renderVisible && items.length > 0 && (
+  <section class="section" aria-labelledby="faq-heading">
+    <div class="container">
+      <div class="section-header">
+        <h2 id="faq-heading">Frequently asked questions</h2>
+      </div>
+      <div class="faq">
+        {items.map((item) => (
+          <details class="faq__item">
+            <summary class="faq__q">{item.q}</summary>
+            <div class="faq__a">{item.a}</div>
+          </details>
+        ))}
+      </div>
+    </div>
+  </section>
+)}
+
+<style>
+  .faq { display: flex; flex-direction: column; gap: 0.5rem; max-width: 760px; }
+  .faq__item { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1rem 1.25rem; background: var(--bg); }
+  .faq__q { font-weight: 600; cursor: pointer; color: var(--text); }
+  .faq__a { margin-top: 0.75rem; color: var(--text-secondary); }
+</style>

@@ -1,0 +1,37 @@
+name: Regenerate llms.txt
+
+on:
+  schedule:
+    - cron: '17 5 * * *'   # nightly at 05:17 UTC
+  workflow_dispatch:
+  repository_dispatch:
+    types: [content-changed]
+
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Regenerate llms.txt and llms-full.txt
+        run: node scripts/generate-llms-txt.mjs
+      - name: Open PR if changed
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: 'chore(llms): nightly regenerate llms.txt + llms-full.txt'
+          title: 'chore(llms): nightly regenerate'
+          body: |
+            Automated nightly regeneration of `public/llms.txt` and `public/llms-full.txt`
+            based on current content collections.
+
+            Safe to auto-merge: only touches the two LLM-citation index files.
+          branch: chore/llms-regen
+          delete-branch: true
+          labels: |
+            auto-merge-ok
+            llms

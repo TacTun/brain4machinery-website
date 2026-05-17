@@ -1,0 +1,116 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+<BaseLayout
+  title="About — TACTUN"
+  description="TACTUN: 14 years of systems integration experience, 800+ controllers shipped, 2 US patents. Meet the team behind the control spine for intelligent machines."
+  active="about"
+>
+  <!-- Company Story -->
+  <section class="hero hero--short section">
+    <div class="container">
+      <div class="section-header" style="max-width: 800px; margin-bottom: 0;">
+        <span class="label">About</span>
+        <h1>We Make Machines <span class="accent">Think.</span></h1>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top: 0;">
+    <div class="container">
+      <div style="max-width: 720px;" class="fade-in">
+        <p style="font-size: 1.125rem; margin-bottom: 1.5rem;">TACTUN started from 14 years of systems integration experience &mdash; building and deploying controllers for oil &amp; gas, automotive, and laboratory equipment. We saw the same problem everywhere: every new intelligent machine needed custom control electronics, and building them took too long and cost too much.</p>
+        <p style="font-size: 1.125rem; margin-bottom: 1.5rem;">So we built a platform that lets us design a fully custom AI-native control board in 5 business days, at zero R&amp;D cost to the customer. Our architecture combines FPGA deterministic real-time control with NVIDIA Jetson AI compute on a single PCB &mdash; tailored to each machine's specific requirements.</p>
+        <p style="font-size: 1.125rem; margin-bottom: 1.5rem;">Today we've shipped 800+ controllers, serve 6 customers across precision machinery and energy, and are expanding into robotics and autonomous machines. We believe every intelligent machine deserves a purpose-built control spine &mdash; and we're building the company that delivers it.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Team -->
+  <section class="section section--alt" id="team">
+    <div class="container">
+      <div class="section-header section-header--center fade-in">
+        <h2>The team behind <span class="accent">the spine.</span></h2>
+      </div>
+      <div class="team-grid fade-in">
+        <div class="team-member">
+          <img src="/assets/team_rafayel.jpg" alt="Rafayel Ghasabyan" width="140" height="140" loading="lazy">
+          <div class="team-member__name">Rafayel Ghasabyan</div>
+          <div class="team-member__role">CEO</div>
+          <p class="team-member__bio">Systems architect with 14 years building control electronics for industrial and laboratory equipment. Leads product strategy and customer engagements.</p>
+        </div>
+        <div class="team-member">
+          <img src="/assets/team_arevik.jpg" alt="Arev Hambardzumyan" width="140" height="140" loading="lazy">
+          <div class="team-member__name">Arev Hambardzumyan</div>
+          <div class="team-member__role">CTO</div>
+          <p class="team-member__bio">FPGA and embedded systems engineer. Designed the core platform architecture combining real-time deterministic control with edge AI compute.</p>
+        </div>
+        <div class="team-member">
+          <img src="/assets/team_ani.jpg" alt="Ani Artenyan" width="140" height="140" loading="lazy">
+          <div class="team-member__name">Ani Artenyan</div>
+          <div class="team-member__role">COO</div>
+          <p class="team-member__bio">Operations lead managing manufacturing partnerships, supply chain, and customer delivery. Ensures boards ship on time, every time.</p>
+        </div>
+      </div>
+      <p class="text-center text-muted fade-in" style="margin-top: 2rem;">5-person AI-native team. 2 US patents. AI agents embedded in daily operations.</p>
+    </div>
+  </section>
+
+  <!-- IP & Credibility -->
+  <section class="section">
+    <div class="container">
+      <div class="section-header section-header--center fade-in">
+        <h2>Built on <span class="accent">proven foundations.</span></h2>
+      </div>
+      <div class="stats-row fade-in">
+        <div class="stat-item">
+          <div class="stat-item__number">2</div>
+          <div class="stat-item__label">Granted US Patents</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-item__number">800+</div>
+          <div class="stat-item__label">Controllers Shipped</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-item__number">14 yrs</div>
+          <div class="stat-item__label">Systems Integration</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-item__number">5 days</div>
+          <div class="stat-item__label">Architecture Design</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Backers -->
+  <section class="section backers">
+    <div class="container">
+      <div class="backers__inner fade-in">
+        <span class="label">Backed by</span>
+        <div class="backers__row">
+          <a href="https://tactun.com/tactun-joins-nvidia-inception-program/" class="backers__logo backers__logo--nvidia" target="_blank" rel="noopener" aria-label="Read about TACTUN joining the NVIDIA Inception Program">
+            <img src="/assets/NVIDIA-Logo-Inception.png" alt="NVIDIA Inception Program" loading="lazy">
+          </a>
+          <a href="https://tactun.com/tactun-showcased-at-plug-and-play-armenia-demo-day/" class="backers__logo backers__logo--plug" target="_blank" rel="noopener" aria-label="Read about TACTUN at the Plug and Play Armenia Demo Day">
+            <img src="/assets/Logo_Plug_and_Play_New.png" alt="Plug and Play" loading="lazy">
+          </a>
+          <a href="https://tactun.com/tactun-announces-investment-from-smartgatevc/" class="backers__logo backers__logo--smartgate" target="_blank" rel="noopener" aria-label="Read about TACTUN's investment from SmartGateVC">
+            <img src="/assets/SG_Logo_6.png" alt="SmartGateVC" loading="lazy">
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Careers -->
+  <section class="section section--alt" id="careers">
+    <div class="container">
+      <div style="max-width: 600px; margin: 0 auto; text-align: center;" class="fade-in">
+        <h2>Join us.</h2>
+        <p style="font-size: 1.125rem; color: var(--text-secondary); margin: 1rem 0 2rem;">We're a small team building something big. If you want to work at the intersection of AI and real-time control systems &mdash; get in touch.</p>
+        <a href="mailto:contact@tactun.com" class="btn btn--secondary">contact@tactun.com</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

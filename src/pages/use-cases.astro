@@ -1,0 +1,227 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+<BaseLayout
+  title="Use Cases — TACTUN"
+  description="From autonomous farm robots to surgical instruments — if your machine needs custom AI-native control electronics, TACTUN has built it."
+  active="use-cases"
+>
+  <!-- Hero -->
+  <section class="hero hero--short section">
+    <div class="container">
+      <div class="section-header section-header--center" style="margin-bottom: 0;">
+        <span class="label">Use Cases</span>
+        <h1>Every intelligent machine has a <span class="accent">unique control challenge.</span> We solve it.</h1>
+        <p>From autonomous farm robots to surgical instruments &mdash; if your machine needs custom AI-native control electronics, we've built it.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Vertical Navigation -->
+  <section class="section" style="padding-top: 0; padding-bottom: 2rem;">
+    <div class="container">
+      <div class="vertical-nav fade-in">
+        <a href="#agriculture">Agriculture</a>
+        <a href="#construction">Construction &amp; Mining</a>
+        <a href="#marine">Marine &amp; Underwater</a>
+        <a href="#medical">Medical &amp; Surgical</a>
+        <a href="#inspection">Inspection &amp; Maintenance</a>
+        <a href="#food">Food &amp; Logistics</a>
+        <a href="#solar">Solar &amp; Energy</a>
+        <a href="#testing">Materials Testing</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Verticals -->
+  <section class="section section--alt" style="padding-top: 1rem;">
+    <div class="container">
+
+      <div class="vertical fade-in" id="agriculture">
+        <div class="vertical__header">
+          <span class="label">Agricultural Robotics</span>
+          <h3>Autonomy Across Rugged Terrain</h3>
+        </div>
+        <p class="vertical__challenge">Agricultural robots must navigate unstructured fields, coordinate with precision implements, and operate reliably in dust, moisture, and extreme temperatures. Each machine type &mdash; from autonomous weeders to robotic harvesters &mdash; requires a unique combination of real-time motor control, GPS-guided navigation, and computer vision for crop detection. The control system must handle all of this while meeting the ruggedization demands of all-weather outdoor deployment.</p>
+        <div class="vertical__grid">
+          <div class="vertical__what">
+            <h4>What TACTUN brings</h4>
+            <ul>
+              <li>Custom FPGA-based real-time control for precision implement actuation</li>
+              <li>NVIDIA Jetson integration for on-board crop detection and navigation AI</li>
+              <li>Weatherproof design with wide-range power input for field operation</li>
+            </ul>
+          </div>
+          <div class="vertical__reqs">
+            <h4>Key Technical Requirements</h4>
+            <p>RTK GPS, implement control, LiDAR/camera fusion, weatherproof enclosure, 12&ndash;48V power systems, CAN bus interfaces, fleet-scale cloud connectivity</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="vertical fade-in" id="construction">
+        <div class="vertical__header">
+          <span class="label">Construction &amp; Mining</span>
+          <h3>Autonomous Heavy Equipment in Harsh Environments</h3>
+        </div>
+        <p class="vertical__challenge">Autonomous excavators, loaders, and inspection robots must operate in some of the harshest conditions on earth &mdash; extreme vibration, dust, temperature swings, and constant mechanical stress. Adding autonomy to heavy equipment means integrating hydraulic control interfaces, LiDAR/GPS positioning, and safety systems onto a single ruggedized control platform that can withstand years of field abuse.</p>
+        <div class="vertical__grid">
+          <div class="vertical__what">
+            <h4>What TACTUN brings</h4>
+            <ul>
+              <li>Ruggedized FPGA control board with hydraulic valve interfaces</li>
+              <li>Multi-sensor fusion (LiDAR, cameras, GNSS) processed on-board via Jetson</li>
+              <li>Safety-rated I/O for operator protection and emergency stop systems</li>
+            </ul>
+          </div>
+          <div class="vertical__reqs">
+            <h4>Key Technical Requirements</h4>
+            <p>Hydraulic proportional valve control, CAN/J1939 interfaces, shock/vibration rated, wide-temperature operation, IP67+ enclosures, GNSS/RTK positioning</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="vertical fade-in" id="marine">
+        <div class="vertical__header">
+          <span class="label">Marine &amp; Underwater</span>
+          <h3>Intelligent Control at Depth</h3>
+        </div>
+        <p class="vertical__challenge">ROVs, AUVs, and underwater inspection drones face a uniquely challenging control problem: pressure-tolerant electronics must process sonar data, control multiple thrusters for stable positioning, and run autonomous navigation algorithms &mdash; all in a compact, sealed package operating at depths of hundreds of meters. Communication bandwidth is severely limited underwater, making on-board intelligence essential.</p>
+        <div class="vertical__grid">
+          <div class="vertical__what">
+            <h4>What TACTUN brings</h4>
+            <ul>
+              <li>Compact, low-power FPGA design for pressure-vessel integration</li>
+              <li>On-board AI for sonar processing and autonomous path planning</li>
+              <li>Multi-thruster real-time control for stable hovering and maneuvering</li>
+            </ul>
+          </div>
+          <div class="vertical__reqs">
+            <h4>Key Technical Requirements</h4>
+            <p>Pressure-tolerant electronics, sonar/acoustic interfaces, multi-thruster ESC control, low-power design, depth-rated connectors, acoustic modem integration</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="vertical fade-in" id="medical">
+        <div class="vertical__header">
+          <span class="label">Medical &amp; Surgical</span>
+          <h3>Real-Time Precision Where Every Microsecond Matters</h3>
+        </div>
+        <p class="vertical__challenge">Surgical navigation and robotic instruments demand ultra-low-latency real-time computing, miniaturized form factors, and medical-grade reliability. The control system must fuse patient tracking data with instrument positioning at microsecond precision, while meeting stringent regulatory requirements for safety and electromagnetic compatibility.</p>
+        <div class="vertical__grid">
+          <div class="vertical__what">
+            <h4>What TACTUN brings</h4>
+            <ul>
+              <li>FPGA-based deterministic control with microsecond-class latency</li>
+              <li>Miniaturized PCB design for integration into surgical instruments</li>
+              <li>Architecture designed for medical-grade reliability and compliance pathways</li>
+            </ul>
+          </div>
+          <div class="vertical__reqs">
+            <h4>Key Technical Requirements</h4>
+            <p>Ultra-low-latency processing, miniaturized form factor, EMI/EMC compliance, sterilization-compatible materials, patient safety isolation, FDA pathway awareness</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="vertical fade-in" id="inspection">
+        <div class="vertical__header">
+          <span class="label">Inspection &amp; Maintenance</span>
+          <h3>Stable Contact in Unstable Environments</h3>
+        </div>
+        <p class="vertical__challenge">Aerial and ground-based inspection robots must maintain precise positioning while performing non-destructive testing (NDT), often in GPS-denied environments like inside industrial structures or at height on bridges and towers. The control challenge is unique: stable flight or positioning combined with contact mechanics for sensor placement against surfaces, while processing sensor data in real time.</p>
+        <div class="vertical__grid">
+          <div class="vertical__what">
+            <h4>What TACTUN brings</h4>
+            <ul>
+              <li>FPGA-grade real-time SLAM for stable positioning in GPS-denied environments</li>
+              <li>Custom sensor interfaces for NDT instruments (ultrasonic, eddy current, thermal)</li>
+              <li>Contact force control for surface-interactive inspection</li>
+            </ul>
+          </div>
+          <div class="vertical__reqs">
+            <h4>Key Technical Requirements</h4>
+            <p>Visual-inertial SLAM, NDT sensor interfaces, contact force sensing, wind-resistant flight control, compact/lightweight design, real-time data streaming</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="vertical fade-in" id="food">
+        <div class="vertical__header">
+          <span class="label">Food Service &amp; Logistics</span>
+          <h3>Vision-Guided Automation in Dynamic Environments</h3>
+        </div>
+        <p class="vertical__challenge">Kitchen automation and warehouse robots operate in chaotic, dynamic environments where precise manipulation meets variable objects. Each robot must combine computer vision for object recognition with fine motor control for grasping and manipulation &mdash; all in enclosures that meet food-safety or industrial hygiene standards. The control system must be fast enough for real-time visual servoing and reliable enough for 24/7 operation.</p>
+        <div class="vertical__grid">
+          <div class="vertical__what">
+            <h4>What TACTUN brings</h4>
+            <ul>
+              <li>High-speed vision processing via Jetson with real-time servo control via FPGA</li>
+              <li>Multi-axis motor control for dexterous manipulation</li>
+              <li>Food-safe and hygiene-rated enclosure design options</li>
+            </ul>
+          </div>
+          <div class="vertical__reqs">
+            <h4>Key Technical Requirements</h4>
+            <p>Vision-guided servoing, multi-axis servo control, food-safe materials (IP69K options), thermal management, EtherCAT/EtherNet-IP interfaces, cloud fleet management</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="vertical fade-in" id="solar">
+        <div class="vertical__header">
+          <span class="label">Solar &amp; Energy</span>
+          <h3>Fleet-Scale Autonomy Under the Sun</h3>
+        </div>
+        <p class="vertical__challenge">Solar panel cleaning robots and grid inspection systems must operate autonomously across massive solar farms and energy infrastructure, often in extreme heat and desert conditions. Each robot needs weather-hardened electronics, precision motor control for panel cleaning or inspection tasks, and cloud connectivity for fleet-scale coordination. The economics demand high-volume, cost-optimized control hardware.</p>
+        <div class="vertical__grid">
+          <div class="vertical__what">
+            <h4>What TACTUN brings</h4>
+            <ul>
+              <li>Weather-hardened, wide-temperature control electronics</li>
+              <li>Cloud-connected fleet management at scale (thousands of units)</li>
+              <li>Cost-optimized board design for high-volume deployment</li>
+            </ul>
+          </div>
+          <div class="vertical__reqs">
+            <h4>Key Technical Requirements</h4>
+            <p>Extended temperature range (-40&deg;C to +85&deg;C), solar-powered low-energy operation, dust/waterproofing (IP67+), cellular/LPWAN connectivity, fleet OTA updates</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="vertical fade-in" id="testing">
+        <div class="vertical__header">
+          <span class="label">Materials Testing</span>
+          <h3>Our Proven Beachhead</h3>
+        </div>
+        <p class="vertical__challenge">Materials testing machines &mdash; tensile testers, hardness testers, fatigue systems &mdash; demand precision control of servo motors and hydraulic actuators combined with high-speed data acquisition. The control system is the single most valuable component in the machine, representing 20&ndash;40% of total machine cost. Mid-market manufacturers face intense pressure to add AI-powered analysis, cloud connectivity, and automated sample handling without the R&amp;D budget of the industry leaders.</p>
+        <div class="vertical__grid">
+          <div class="vertical__what">
+            <h4>What TACTUN delivers today</h4>
+            <ul>
+              <li>Production controllers deployed across multiple testing machine manufacturers</li>
+              <li>800+ controllers shipped with proven reliability</li>
+              <li>Cloud-connected test data management and remote monitoring</li>
+            </ul>
+          </div>
+          <div class="vertical__reqs">
+            <h4>Learn More</h4>
+            <p>For materials testing solutions, visit <a href="https://tactun.com" target="_blank" rel="noopener" style="color: var(--purple); font-weight: 600;">tactun.com</a></p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="container fade-in">
+      <h2>Have a <span class="accent">different use case?</span></h2>
+      <p>We've designed controllers for machines we'd never heard of before. Tell us about yours.</p>
+      <a href="/contact" class="btn btn--primary">Start a Conversation</a>
+    </div>
+  </section>
+</BaseLayout>

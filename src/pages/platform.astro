@@ -1,0 +1,173 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+<BaseLayout
+  title="Platform & Technology — TACTUN"
+  description="TACTUN combines FPGA real-time deterministic control with NVIDIA Jetson AI compute on a single PCB — designed specifically for your machine."
+  active="platform"
+>
+  <!-- Platform Hero -->
+  <section class="hero hero--short section">
+    <div class="container">
+      <div class="section-header section-header--center" style="margin-bottom: 0;">
+        <span class="label">Platform</span>
+        <h1>AI-Native Control. <span class="accent">Custom for Every Machine.</span></h1>
+        <p>TACTUN combines FPGA real-time deterministic control with NVIDIA Jetson AI compute on a single PCB &mdash; designed specifically for your machine's requirements.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Brain vs Spine -->
+  <section class="section section--alt">
+    <div class="container">
+      <div class="section-header section-header--center fade-in">
+        <h2>Your AI is the brain. <span class="accent">TACTUN is the spine.</span></h2>
+        <p>They work together. They stay cleanly separated.</p>
+      </div>
+      <div class="bvs fade-in">
+        <div class="bvs__panel bvs__panel--brain">
+          <div class="bvs__owner">Customer's AI</div>
+          <h3>The Brain</h3>
+          <ul>
+            <li>Vision &amp; perception</li>
+            <li>Navigation &amp; planning</li>
+            <li>Decision making</li>
+            <li>NVIDIA Jetson / custom AI</li>
+          </ul>
+        </div>
+        <div class="bvs__connector">
+          <span style="font-size: 1.5rem;">&larr;</span>
+          <span>data flow</span>
+          <span style="font-size: 1.5rem;">&rarr;</span>
+        </div>
+        <div class="bvs__panel bvs__panel--spine">
+          <div class="bvs__owner">TACTUN Platform</div>
+          <h3>The Spine</h3>
+          <ul>
+            <li>Sensing &amp; actuation</li>
+            <li>Real-time motor control (FPGA)</li>
+            <li>Safety &amp; machine state</li>
+            <li>Operator software &amp; cloud connectivity</li>
+          </ul>
+        </div>
+      </div>
+      <p class="text-center text-muted fade-in" style="margin-top: 2rem; font-size: 1.0625rem;">Your AI sends commands. TACTUN makes the machine move safely.</p>
+    </div>
+  </section>
+
+  <!-- Platform Capabilities -->
+  <section class="section">
+    <div class="container">
+      <div class="section-header fade-in">
+        <span class="label">Capabilities</span>
+        <h2>Everything your machine needs. <span class="accent">On one board.</span></h2>
+      </div>
+      <div class="grid grid--3 fade-in">
+        <div>
+          <div class="cap-group">
+            <div class="cap-group__title">Hardware</div>
+            <div class="cap-item">Custom FPGA architecture for deterministic real-time control</div>
+            <div class="cap-item">NVIDIA Jetson integration (edge AI compute)</div>
+            <div class="cap-item">Tailored I/O for your specific sensors and actuators</div>
+            <div class="cap-item">Motor control (servo, stepper, hydraulic, pneumatic)</div>
+            <div class="cap-item">Safety logic and machine state management</div>
+          </div>
+        </div>
+        <div>
+          <div class="cap-group">
+            <div class="cap-group__title">Software</div>
+            <div class="cap-item">No-code application builder for operator interfaces</div>
+            <div class="cap-item">Cloud connectivity and remote monitoring</div>
+            <div class="cap-item">Model Context Protocol (MCP) support &mdash; configure and query your controller with AI tools</div>
+            <div class="cap-item">OTA firmware updates</div>
+          </div>
+        </div>
+        <div>
+          <div class="cap-group">
+            <div class="cap-group__title">Design Services</div>
+            <div class="cap-item">Board architecture designed in 5 business days</div>
+            <div class="cap-item">$0 NRE &mdash; customer pays only for production hardware</div>
+            <div class="cap-item">Full manufacturing management (prototype through volume)</div>
+            <div class="cap-item">Physical prototypes: 3&ndash;5 months (standard contract-manufacturing timelines)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Product Photos -->
+  <section class="section section--alt">
+    <div class="container">
+      <div class="grid grid--3 fade-in">
+        <div>
+          <img src="/assets/board_jetson.jpg" alt="TACTUN controller with NVIDIA Jetson module" style="border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.1);" loading="lazy">
+          <p class="text-muted text-center" style="margin-top: 0.75rem; font-size: 0.875rem;">AI-native controller with Jetson module</p>
+        </div>
+        <div>
+          <img src="/assets/pcb_layout.jpg" alt="TACTUN PCB layout design" style="border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.1);" loading="lazy">
+          <p class="text-muted text-center" style="margin-top: 0.75rem; font-size: 0.875rem;">Custom PCB layout design</p>
+        </div>
+        <div>
+          <img src="/assets/controller_enclosure.jpg" alt="TACTUN controller in enclosure" style="border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.1);" loading="lazy">
+          <p class="text-muted text-center" style="margin-top: 0.75rem; font-size: 0.875rem;">Production controller in enclosure</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How We Work -->
+  <section class="section" id="how-we-work">
+    <div class="container">
+      <div class="section-header fade-in">
+        <span class="label">Process</span>
+        <h2>How we work with you.</h2>
+      </div>
+      <div class="process fade-in" style="max-width: 720px;">
+        <div class="process__step">
+          <div class="process__num">1</div>
+          <div class="process__content">
+            <h4>Discovery call</h4>
+            <p>We learn about your machine, sensors, actuators, AI requirements, form factor constraints, and volume needs.</p>
+          </div>
+        </div>
+        <div class="process__step">
+          <div class="process__num">2</div>
+          <div class="process__content">
+            <h4>Architecture design (5 business days)</h4>
+            <p>We deliver a custom board architecture specification: schematic concept, I/O mapping, component selection, form factor.</p>
+          </div>
+        </div>
+        <div class="process__step">
+          <div class="process__num">3</div>
+          <div class="process__content">
+            <h4>Prototype build (3&ndash;5 months)</h4>
+            <p>Physical prototype through our manufacturing partners. We manage the entire process.</p>
+          </div>
+        </div>
+        <div class="process__step">
+          <div class="process__num">4</div>
+          <div class="process__content">
+            <h4>Testing &amp; iteration</h4>
+            <p>We validate the board with your machine. Iterate as needed until it meets your requirements.</p>
+          </div>
+        </div>
+        <div class="process__step">
+          <div class="process__num">5</div>
+          <div class="process__content">
+            <h4>Production</h4>
+            <p>Volume manufacturing. You order boards, we deliver. Ongoing support and firmware updates included.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="container fade-in">
+      <h2>Ready to see what a custom TACTUN controller <span class="accent">looks like for your machine?</span></h2>
+      <p>Tell us about your requirements. We'll show you what's possible.</p>
+      <a href="/contact" class="btn btn--primary">Request a Quote</a>
+    </div>
+  </section>
+</BaseLayout>

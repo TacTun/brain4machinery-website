@@ -1,0 +1,37 @@
+name: Deploy to Cloudflare Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run lint:facts
+      - run: npm run build
+      - run: npm run lint:links
+      - name: Publish to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=brain4machinery-website --branch=main
+      - name: Notify engine of deploy
+        if: success() && secrets.ENGINE_DISPATCH_TOKEN != ''
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.ENGINE_DISPATCH_TOKEN }}
+          repository: ${{ vars.ENGINE_REPO }}
+          event-type: website-deployed
+          client-payload: '{"sha": "${{ github.sha }}", "ref": "${{ github.ref }}"}'
