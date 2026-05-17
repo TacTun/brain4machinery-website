@@ -33,6 +33,6 @@ const definedTermJsonLd = {
   faq={data.faq}
   canonical={data.canonical}
 >
-  <script type="application/ld+json" set:html={JSON.stringify(definedTermJsonLd)} />
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(definedTermJsonLd)} />
   <Content />
 </ArticleLayout>

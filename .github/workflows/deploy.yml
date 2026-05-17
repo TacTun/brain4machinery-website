@@ -28,7 +28,9 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy dist --project-name=brain4machinery-website --branch=main
       - name: Notify engine of deploy
-        if: success() && secrets.ENGINE_DISPATCH_TOKEN != ''
+        if: success() && env.ENGINE_DISPATCH_TOKEN != ''
+        env:
+          ENGINE_DISPATCH_TOKEN: ${{ secrets.ENGINE_DISPATCH_TOKEN }}
         uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.ENGINE_DISPATCH_TOKEN }}
