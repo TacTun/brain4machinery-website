@@ -2,10 +2,22 @@ name = "brain4machinery-website"
 compatibility_date = "2025-05-01"
 pages_build_output_dir = "dist"
 
-# After running `npx wrangler d1 create brain4machinery-contact`, paste the
-# returned database_id below. The binding name `DB` matches the type used in
-# functions/api/contact.ts and functions/admin/[[catchall]].ts.
-[[d1_databases]]
-binding = "DB"
-database_name = "brain4machinery-contact"
-database_id = "REPLACE_ME_AFTER_WRANGLER_D1_CREATE"
+# ---------------------------------------------------------------------------
+# D1 binding for the contact-form submissions table.
+#
+# This block is commented out so merging this PR is a no-op for the live
+# deploy. To activate:
+#   1. npx wrangler login
+#   2. npx wrangler d1 create brain4machinery-contact
+#      → paste the returned database_id below (replaces REPLACE_ME)
+#   3. npx wrangler d1 execute brain4machinery-contact --file=schema.sql --remote
+#   4. uncomment the four lines below and push.
+#
+# (Alternatively, skip this block entirely and create the binding in
+#  Cloudflare Pages → Settings → Functions → D1 database bindings.
+#  Use variable name `DB` either way.)
+# ---------------------------------------------------------------------------
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "brain4machinery-contact"
+# database_id = "REPLACE_ME_AFTER_WRANGLER_D1_CREATE"
