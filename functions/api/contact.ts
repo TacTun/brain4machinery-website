@@ -3,7 +3,9 @@
  *
  * Receives the contact form payload, verifies the Cloudflare Turnstile
  * challenge (if configured), persists the submission to D1 (if bound),
- * and forwards the message to contact@tactun.com via Resend.
+ * forwards the message to contact@tactun.com via Resend, and optionally
+ * pushes the submission to the tactun-core CRM (if its endpoint env vars
+ * are set).
  *
  * To activate:
  *   1. Sign up at resend.com, verify the tactun.com domain.
@@ -13,6 +15,9 @@
  *      - CONTACT_FROM_EMAIL (must match a verified domain, e.g. forms@brain4machinery.com)
  *      - PUBLIC_TURNSTILE_SITE_KEY (plaintext, exposed to client)
  *      - TURNSTILE_SECRET_KEY (secret)
+ *      - TACTUN_CORE_URL (optional, e.g. https://core.tactun.com — when set,
+ *        every submission is POSTed to {TACTUN_CORE_URL}/v1/inbound/contact-form)
+ *      - TACTUN_CORE_INBOUND_KEY (secret, shared with the tactun-core endpoint)
  *   3. Create a D1 database and bind it as DB (see wrangler.toml + schema.sql).
  *   4. Redeploy.
  *
@@ -25,6 +30,8 @@ interface Env {
   CONTACT_TO_EMAIL?: string;
   CONTACT_FROM_EMAIL?: string;
   TURNSTILE_SECRET_KEY?: string;
+  TACTUN_CORE_URL?: string;
+  TACTUN_CORE_INBOUND_KEY?: string;
   DB?: D1Database;
 }
 
@@ -59,6 +66,49 @@ function escapeHtml(s: string): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+interface CrmPushResult {
+  ok: boolean;
+  contactId?: string;
+}
+
+async function pushToCrm(
+  url: string,
+  inboundKey: string,
+  payload: { name: string; email: string; company?: string; message: string; submissionId: number | null },
+): Promise<CrmPushResult> {
+  try {
+    // The tactun-core endpoint is expected to be POST {TACTUN_CORE_URL}/v1/inbound/contact-form
+    // with header X-Tactun-Inbound-Key, body { name, email, company, message, source, submission_id },
+    // returning { contact_id: string }.
+    const endpoint = `${url.replace(/\/+$/, '')}/v1/inbound/contact-form`;
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Tactun-Inbound-Key': inboundKey,
+      },
+      body: JSON.stringify({
+        name: payload.name,
+        email: payload.email,
+        company: payload.company ?? null,
+        message: payload.message,
+        source: 'brain4machinery.com',
+        submission_id: payload.submissionId,
+      }),
+    });
+    if (!res.ok) {
+      const errText = await res.text().catch(() => '');
+      console.error('[contact-form] tactun-core CRM push failed:', res.status, errText.slice(0, 200));
+      return { ok: false };
+    }
+    const data = (await res.json().catch(() => ({}))) as { contact_id?: string };
+    return { ok: true, contactId: data.contact_id };
+  } catch (err) {
+    console.error('[contact-form] tactun-core CRM push threw:', err);
+    return { ok: false };
+  }
 }
 
 async function verifyTurnstile(secret: string, token: string, ip: string | null): Promise<boolean> {
@@ -194,6 +244,31 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
         }
       } catch (err) {
         console.error('[contact-form] Resend id update error:', err);
+      }
+    }
+
+    // Phase 3a: optional auto-push to tactun-core CRM. Best-effort; never
+    // blocks a successful submission. Activates when both env vars are set
+    // AND the endpoint at {TACTUN_CORE_URL}/v1/inbound/contact-form exists.
+    const coreUrl = context.env.TACTUN_CORE_URL;
+    const coreKey = context.env.TACTUN_CORE_INBOUND_KEY;
+    if (coreUrl && coreKey) {
+      const crm = await pushToCrm(coreUrl, coreKey, {
+        name: payload.name,
+        email: payload.email,
+        company: payload.company,
+        message: payload.message,
+        submissionId,
+      });
+      if (crm.ok && submissionId !== null && context.env.DB) {
+        try {
+          await context.env.DB
+            .prepare(`UPDATE submissions SET status = 'crm_pushed', crm_contact_id = ? WHERE id = ?`)
+            .bind(crm.contactId ?? null, submissionId)
+            .run();
+        } catch (err) {
+          console.error('[contact-form] D1 crm_contact_id update error:', err);
+        }
       }
     }
 
