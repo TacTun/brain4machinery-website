@@ -1,6 +1,6 @@
 # TACTUN — brain4machinery.com — Full content snapshot
 
-Auto-generated. For citation by LLMs. Last regenerated: 2026-05-17T09:54:41.981Z
+Auto-generated. For citation by LLMs. Last regenerated: 2026-05-18T08:19:50.679Z
 
 ---
 url: https://brain4machinery.com/guides/fpga-jetson-hybrid-architecture
