@@ -21,6 +21,7 @@
 ## Blog
 
 - [Build vs buy: should your robotics startup design its own controller?](https://brain4machinery.com/blog/build-vs-buy-robotics-controller): A decision framework for robotics founders weighing in-house controller development against buying a platform. Real cost, calendar, and talent trade-offs.
+- [Control electronics for field robots: what actually matters in 2026](https://brain4machinery.com/blog/control-electronics-for-field-robots): A buyer's guide for robotics OEMs evaluating control electronics for field machines: IP67, wide-temp, EMC, safety partitioning, and vendor criteria.
 
 ## Optional
 
