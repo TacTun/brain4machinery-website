@@ -1,0 +1,11 @@
+name = "brain4machinery-website"
+compatibility_date = "2025-05-01"
+pages_build_output_dir = "dist"
+
+# After running `npx wrangler d1 create brain4machinery-contact`, paste the
+# returned database_id below. The binding name `DB` matches the type used in
+# functions/api/contact.ts and functions/admin/[[catchall]].ts.
+[[d1_databases]]
+binding = "DB"
+database_name = "brain4machinery-contact"
+database_id = "REPLACE_ME_AFTER_WRANGLER_D1_CREATE"

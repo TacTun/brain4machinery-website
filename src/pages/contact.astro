@@ -1,10 +1,13 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+
+const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? '';
 ---
 <BaseLayout
   title="Contact — TACTUN"
   description="Tell us about your machine. Whether you're building a robot or adding intelligence to an existing product, we'd love to hear from you."
   active=""
+  turnstile={Boolean(turnstileSiteKey)}
 >
   <!-- Contact -->
   <section class="section" style="padding-top: calc(72px + 4rem);">
@@ -36,6 +39,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
               <label for="message" class="form__label">Tell us about your project</label>
               <textarea id="message" name="message" class="form__textarea" required placeholder="What kind of machine are you building? What sensors, actuators, or AI capabilities do you need?"></textarea>
             </div>
+            {turnstileSiteKey && (
+              <div class="form__group">
+                <div class="cf-turnstile" data-sitekey={turnstileSiteKey} data-theme="light"></div>
+              </div>
+            )}
             <button type="submit" class="btn btn--primary form__submit">Send Message</button>
             <div id="form-status" class="form__status"></div>
           </form>

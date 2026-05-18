@@ -12,6 +12,7 @@ interface Props {
   ogImage?: string;
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
   noIndex?: boolean;
+  turnstile?: boolean;
 }
 
 const {
@@ -22,6 +23,7 @@ const {
   ogImage = '/assets/board_jetson.jpg',
   jsonLd,
   noIndex = false,
+  turnstile = false,
 } = Astro.props;
 
 const siteUrl = 'https://brain4machinery.com';
@@ -85,6 +87,10 @@ const websiteJsonLd = {
     <JsonLd data={orgJsonLd} />
     <JsonLd data={websiteJsonLd} />
     {jsonLd && <JsonLd data={jsonLd} />}
+
+    {turnstile && (
+      <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    )}
   </head>
   <body>
     <Nav active={active} />
