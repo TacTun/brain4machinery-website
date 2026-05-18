@@ -1,7 +1,12 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 
-const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? '';
+// Turnstile site key. Public by design — gets baked into the client bundle on
+// every page load. Falls back to the brain4machinery.com site key if the
+// PUBLIC_TURNSTILE_SITE_KEY build env var isn't injected (e.g. when Cloudflare
+// Pages only exposes the value at runtime, not at build time).
+const TURNSTILE_SITE_KEY_FALLBACK = '0x4AAAAAADRtecy19ojK4NMq';
+const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || TURNSTILE_SITE_KEY_FALLBACK;
 ---
 <BaseLayout
   title="Contact — TACTUN"
