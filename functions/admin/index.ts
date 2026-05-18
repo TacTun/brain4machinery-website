@@ -54,23 +54,75 @@ function jsonResponse(body: unknown, status = 200): Response {
   });
 }
 
-function requireAuth(request: Request): { email: string } | Response {
-  const email = request.headers.get('Cf-Access-Authenticated-User-Email');
-  if (!email) {
-    return htmlResponse(
-      `<!doctype html><meta charset="utf-8"><title>Admin — not configured</title>
-       <style>body{font-family:system-ui;max-width:640px;margin:4rem auto;color:#1f2937}
-       code{background:#f3f4f6;padding:.15rem .4rem;border-radius:.25rem}</style>
-       <h1>Admin is locked.</h1>
-       <p>This page is only reachable through Cloudflare Access. Until an Access
-       policy is configured for <code>/admin*</code>, no one (including you) can
-       reach the submission list.</p>
-       <p>Set it up in Zero Trust → Access → Applications. See the comment block
-       at the top of <code>functions/admin/index.ts</code> for the exact steps.</p>`,
-      401,
-    );
+function decodeJwtPayload(jwt: string): Record<string, unknown> | null {
+  try {
+    const parts = jwt.split('.');
+    if (parts.length < 2) return null;
+    const b64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    const pad = b64.length % 4 === 0 ? '' : '='.repeat(4 - (b64.length % 4));
+    return JSON.parse(atob(b64 + pad)) as Record<string, unknown>;
+  } catch {
+    return null;
   }
-  return { email };
+}
+
+function requireAuth(request: Request): { email: string } | Response {
+  // Cloudflare Access can identify the user in two ways:
+  //   (a) the convenience header `Cf-Access-Authenticated-User-Email`
+  //   (b) a signed JWT in `Cf-Access-Jwt-Assertion` (claims include the email)
+  // Cloudflare strips any client-supplied Cf-* headers at the edge before the
+  // request reaches us, so trusting these without re-verifying the signature
+  // is safe inside a Pages Function fronted by an Access policy.
+  let email =
+    request.headers.get('Cf-Access-Authenticated-User-Email')?.trim() ||
+    null;
+
+  if (!email) {
+    const jwt = request.headers.get('Cf-Access-Jwt-Assertion');
+    if (jwt) {
+      const payload = decodeJwtPayload(jwt);
+      const claim =
+        (payload?.email as string | undefined) ??
+        (payload?.identity as string | undefined) ??
+        (payload?.sub as string | undefined) ??
+        null;
+      if (typeof claim === 'string' && claim.includes('@')) {
+        email = claim.trim();
+      }
+    }
+  }
+
+  if (email) return { email };
+
+  // No email could be derived. Dump the cf-* headers so we can see what
+  // Access is (or isn't) sending.
+  const cfHeaders: string[] = [];
+  request.headers.forEach((value, key) => {
+    if (key.toLowerCase().startsWith('cf-')) {
+      const v = value.length > 96 ? value.slice(0, 96) + '…' : value;
+      cfHeaders.push(
+        `<li><code>${escapeHtml(key)}</code>: <code>${escapeHtml(v)}</code></li>`,
+      );
+    }
+  });
+  const diagnostics = cfHeaders.length
+    ? `<h3>Headers received (for debugging)</h3><ul>${cfHeaders.join('')}</ul>`
+    : `<p><em>No <code>cf-*</code> headers reached this function — Cloudflare Access is not intercepting this URL. Check Zero Trust → Access → Applications: the application's domain must be <code>brain4machinery.com</code> and the path must be <code>/admin*</code> (or <code>admin*</code>).</em></p>`;
+
+  return htmlResponse(
+    `<!doctype html><meta charset="utf-8"><title>Admin — not configured</title>
+     <style>body{font-family:system-ui;max-width:720px;margin:4rem auto;color:#1f2937;line-height:1.5}
+     code{background:#f3f4f6;padding:.15rem .4rem;border-radius:.25rem;font-size:.85em;word-break:break-all}
+     ul{font-size:.85em}</style>
+     <h1>Admin is locked.</h1>
+     <p>This page is only reachable through Cloudflare Access. Until an Access
+     policy is configured for <code>/admin*</code>, or until that policy is
+     forwarding the authenticated user's identity, no one (including you) can
+     reach the submission list.</p>
+     <p>Set it up in Zero Trust → Access → Applications.</p>
+     ${diagnostics}`,
+    401,
+  );
 }
 
 function escapeHtml(s: string | null | undefined): string {
