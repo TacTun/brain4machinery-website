@@ -18,6 +18,10 @@ jobs:
           node-version: '20'
           cache: 'npm'
       - run: npm ci
+      # Playwright/chromium is required by rehype-mermaid (inline-svg strategy)
+      # to render ```mermaid code blocks into inline SVG at build time.
+      - name: Install Playwright chromium
+        run: npx playwright install --with-deps chromium
       - run: npm run lint:facts
       - run: npm run build
       - run: npm run lint:links
