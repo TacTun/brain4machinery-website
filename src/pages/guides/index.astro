@@ -1,0 +1,45 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const guides = (await getCollection('guides', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.publishedDate.getTime() - a.data.publishedDate.getTime()
+);
+---
+<BaseLayout
+  title="Guides — TACTUN brain4machinery"
+  description="Architecture guides and how-tos for designing AI-native control systems — FPGA + Jetson partitioning, safety, real-time, field deployment."
+  active="insights"
+>
+  <section class="hero hero--short section">
+    <div class="container">
+      <div class="section-header section-header--center" style="margin-bottom: 0;">
+        <span class="label">Guides</span>
+        <h1>Architecture guides for <span class="accent">AI-native controllers</span>.</h1>
+        <p>Practical, opinionated playbooks for the decisions you face when designing the hardware brain of a real-world machine.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top: 2rem;">
+    <div class="container">
+      {guides.length === 0 ? (
+        <p class="text-muted text-center" style="font-size: 1.0625rem;">
+          New guides coming soon. In the meantime, see the <a href="/platform">platform</a> or <a href="/contact">tell us about your project</a>.
+        </p>
+      ) : (
+        <div class="grid grid--2">
+          {guides.map((guide) => (
+            <a href={`/guides/${guide.slug}`} class="card" style="text-decoration: none; display: block;">
+              <h3 class="card__title" style="font-size: 1.25rem;">{guide.data.title}</h3>
+              <p class="card__text" style="margin-top: 0.5rem;">{guide.data.description}</p>
+              <p class="text-muted" style="font-size: 0.8125rem; margin-top: 0.75rem;">
+                {guide.data.difficulty} &middot; {guide.data.estimatedReadMinutes} min read &middot; {guide.data.publishedDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+              </p>
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
+  </section>
+</BaseLayout>

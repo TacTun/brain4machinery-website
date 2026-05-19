@@ -1,0 +1,47 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const entries = (await getCollection('glossary', ({ data }) => !data.draft)).sort(
+  (a, b) => a.data.term.localeCompare(b.data.term)
+);
+---
+<BaseLayout
+  title="Glossary — TACTUN brain4machinery"
+  description="Plain-language definitions for AI-native control, FPGA-and-Jetson architectures, safety standards, and the vocabulary of building field-deployed machines."
+  active="insights"
+>
+  <section class="hero hero--short section">
+    <div class="container">
+      <div class="section-header section-header--center" style="margin-bottom: 0;">
+        <span class="label">Glossary</span>
+        <h1>The <span class="accent">vocabulary</span> of AI-native control.</h1>
+        <p>Plain-language definitions for the terms that come up when designing controllers for robots and intelligent machines.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top: 2rem;">
+    <div class="container">
+      {entries.length === 0 ? (
+        <p class="text-muted text-center" style="font-size: 1.0625rem;">
+          New entries coming soon. In the meantime, see the <a href="/platform">platform</a> or <a href="/contact">tell us about your project</a>.
+        </p>
+      ) : (
+        <div class="grid grid--2">
+          {entries.map((entry) => (
+            <a href={`/glossary/${entry.slug}`} class="card" style="text-decoration: none; display: block;">
+              <h3 class="card__title" style="font-size: 1.25rem;">{entry.data.term}</h3>
+              <p class="card__text" style="margin-top: 0.5rem;">{entry.data.description}</p>
+              {entry.data.relatedTerms.length > 0 && (
+                <p class="text-muted" style="font-size: 0.8125rem; margin-top: 0.75rem;">
+                  Related: {entry.data.relatedTerms.join(' &middot; ')}
+                </p>
+              )}
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
+  </section>
+</BaseLayout>

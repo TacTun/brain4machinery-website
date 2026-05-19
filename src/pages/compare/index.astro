@@ -1,0 +1,53 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+// `compare` may legitimately be empty (no head-to-head comparisons published
+// yet). Guard so getCollection on an empty collection doesn't surface as a
+// build error. If empty, the empty-state copy renders.
+let comparisons: Awaited<ReturnType<typeof getCollection<'compare'>>> = [];
+try {
+  comparisons = (await getCollection('compare', ({ data }) => !data.draft)).sort(
+    (a, b) => b.data.publishedDate.getTime() - a.data.publishedDate.getTime()
+  );
+} catch {
+  comparisons = [];
+}
+---
+<BaseLayout
+  title="Comparisons — TACTUN brain4machinery"
+  description="Head-to-head comparisons of control electronics, carrier boards, and motor drives for field-deployed robots and intelligent machines."
+  active="insights"
+>
+  <section class="hero hero--short section">
+    <div class="container">
+      <div class="section-header section-header--center" style="margin-bottom: 0;">
+        <span class="label">Comparisons</span>
+        <h1>Head-to-head, <span class="accent">like for like</span>.</h1>
+        <p>Side-by-side reviews of the boards, modules, and platforms that show up on every field-robot bill of materials.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top: 2rem;">
+    <div class="container">
+      {comparisons.length === 0 ? (
+        <p class="text-muted text-center" style="font-size: 1.0625rem;">
+          Comparisons coming soon. While we draft them, see the <a href="/blog">blog</a>, browse the <a href="/guides">guides</a>, or <a href="/contact">tell us which match-ups you'd want covered</a>.
+        </p>
+      ) : (
+        <div class="grid grid--2">
+          {comparisons.map((entry) => (
+            <a href={`/compare/${entry.slug}`} class="card" style="text-decoration: none; display: block;">
+              <h3 class="card__title" style="font-size: 1.25rem;">{entry.data.title}</h3>
+              <p class="card__text" style="margin-top: 0.5rem;">{entry.data.description}</p>
+              <p class="text-muted" style="font-size: 0.8125rem; margin-top: 0.75rem;">
+                {entry.data.products.map((p) => `${p.vendor} ${p.name}`).join(' vs ')}
+              </p>
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
+  </section>
+</BaseLayout>
