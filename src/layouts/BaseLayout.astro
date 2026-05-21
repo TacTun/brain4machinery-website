@@ -91,6 +91,18 @@ const websiteJsonLd = {
     {turnstile && (
       <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     )}
+
+    {import.meta.env.PROD && (
+      <Fragment>
+        <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-0F21C6S033"></script>
+        <script is:inline>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-0F21C6S033');
+        </script>
+      </Fragment>
+    )}
   </head>
   <body>
     <Nav active={active} />
