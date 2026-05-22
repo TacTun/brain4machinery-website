@@ -35,10 +35,27 @@ jobs:
           # `auto-merge-ok` label being applied only by the trusted engine
           # bot as the security model.
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # Graceful exit: GitHub's `gh pr merge --auto` returns an error when
+        # the repository-level "Allow auto-merge" setting is disabled. In that
+        # case the workflow still surfaces a green run + leaves the
+        # auto-merge-ok label on the PR so a human can spot it and merge
+        # manually. The label is the audit trail; the workflow is just trying
+        # to make it cheaper.
         run: |
           PR=${{ github.event.pull_request.number }}
-          echo "Enabling auto-merge on PR #$PR"
-          gh pr merge "$PR" \
-            --repo ${{ github.repository }} \
-            --auto --squash --delete-branch
+          echo "Attempting to enable auto-merge on PR #$PR"
+          if ! gh pr merge "$PR" \
+              --repo ${{ github.repository }} \
+              --auto --squash --delete-branch 2>&1 | tee /tmp/automerge.log; then
+            if grep -q -i "auto.merge is not allowed\|auto merge is not\|enable auto.merge" /tmp/automerge.log; then
+              echo ""
+              echo "::notice title=Auto-merge unavailable::"\
+                   "Repository-level 'Allow auto-merge' is disabled (see"\
+                   " Settings -> General -> Pull Requests). The PR still has"\
+                   " the auto-merge-ok label; merge manually when ready."
+              exit 0
+            fi
+            echo "::warning title=Auto-merge attempt failed::See log above."
+            exit 0
+          fi
           echo "Auto-merge enabled. GitHub will merge after required checks pass."
