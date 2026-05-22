@@ -14,14 +14,14 @@ jobs:
       contents: write
       pull-requests: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: '20'
       - name: Regenerate llms.txt and llms-full.txt
         run: node scripts/generate-llms-txt.mjs
       - name: Open PR if changed
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v7
         with:
           commit-message: 'chore(llms): nightly regenerate llms.txt + llms-full.txt'
           title: 'chore(llms): nightly regenerate'
