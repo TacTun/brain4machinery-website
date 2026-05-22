@@ -1,0 +1,44 @@
+name: Auto-merge auto-merge-ok PRs
+
+# Watches PRs that carry the `auto-merge-ok` label (applied by
+# brain4machinery-engine's PR Builder when Editor returns a clean PASS on
+# a low-risk collection — currently glossary only). On a qualifying PR,
+# enables GitHub's native auto-merge with --squash, which:
+#   - waits for required checks (build / lint:facts / lint:links / check) to pass,
+#   - then squash-merges + deletes the branch.
+# If checks have already passed by the time we get here, merge fires immediately.
+# If the PR is later disqualified (someone strips the label, a new commit
+# breaks CI), GitHub cancels the pending merge automatically.
+
+on:
+  pull_request_target:
+    types: [labeled, opened, reopened, synchronize]
+    branches: [main]
+
+jobs:
+  auto-merge:
+    # Both conditions must hold:
+    # 1. Label is present (engine's PR Builder applies it).
+    # 2. The PR is not a draft — drafts opt out of auto-merge by design.
+    if: |
+      contains(github.event.pull_request.labels.*.name, 'auto-merge-ok')
+      && github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: write
+    steps:
+      - name: Enable native auto-merge (squash)
+        env:
+          # GITHUB_TOKEN under pull_request_target has elevated permissions
+          # so it can call the merge API. We rely on branch protections + the
+          # `auto-merge-ok` label being applied only by the trusted engine
+          # bot as the security model.
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR=${{ github.event.pull_request.number }}
+          echo "Enabling auto-merge on PR #$PR"
+          gh pr merge "$PR" \
+            --repo ${{ github.repository }} \
+            --auto --squash --delete-branch
+          echo "Auto-merge enabled. GitHub will merge after required checks pass."
