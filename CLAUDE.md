@@ -13,6 +13,7 @@ Content lives in `src/content/<collection>/*.mdx`. Static pages live in `src/pag
 3. **Never publish revenue figures, gross margins, or TAM/SAM/SOM.** The website is engineer-facing; numbers go on `/about` only if they're in the approved list (e.g., "800+ controllers shipped").
 4. **Voice:** restrained, technical, engineer-to-engineer. No marketing fluff. See `engine/style/voice_guide.md` for the full guide.
 5. **Migrate, don't redesign.** Phase 0 migrated 6 pages 1:1 to Astro. Don't redesign without a Strategist + Rafayel decision.
+6. **Every content collection MUST be reachable from the home page.** When you add a new content collection (e.g., `src/content/case-studies/`), in the same PR you MUST update: (a) the "Browse by section" row in `src/pages/index.astro` to include the new collection's landing page, and (b) consider whether `src/components/Nav.astro` should also surface it. The home-page Insights cards auto-surface latest entries from all collections — but the LANDING page for each collection has to be hand-linked or visitors can't browse the whole section. Caught 2026-05-23 when the custom-jetson guide shipped but `/guides/` was unreachable from the home page.
 
 ## Routine tasks
 
