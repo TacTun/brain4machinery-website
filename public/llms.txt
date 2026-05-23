@@ -12,6 +12,7 @@
 
 ## Guides
 
+- [Custom Jetson carrier board design for robotics: a 2026 guide](https://brain4machinery.com/guides/custom-jetson-carrier-board-design): How to design or specify a custom NVIDIA Jetson carrier board for production robotics — module selection, power tree, thermal, EMC, connectors, and lifecycle.
 - [FPGA + NVIDIA Jetson: hybrid control board for field robots](https://brain4machinery.com/guides/fpga-jetson-hybrid-architecture): A 2026 architecture guide for pairing FPGA real-time control with NVIDIA Jetson edge AI on one PCB — interconnects, safety, BOM trade-offs.
 
 ## Glossary
