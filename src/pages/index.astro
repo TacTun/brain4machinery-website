@@ -215,6 +215,26 @@ const collectionLabel: Record<string, string> = {
             </a>
           ))}
         </div>
+        <!--
+          Browse-all section: makes every content collection reachable from the
+          home page in one click. WHEN ADDING A NEW CONTENT COLLECTION, add a
+          link here too (and update src/components/Nav.astro if it should also
+          surface in the top nav). See CLAUDE.md "Hard rule 6".
+        -->
+        <div class="fade-in" style="text-align: center; margin-top: 2.5rem;">
+          <p class="text-muted" style="margin-bottom: 0.875rem; font-size: 0.9375rem;">Browse by section:</p>
+          <p style="margin: 0; font-size: 1rem;">
+            <a href="/blog" style="margin: 0 0.625rem;">Blog</a>
+            <span class="text-muted" aria-hidden="true">·</span>
+            <a href="/guides" style="margin: 0 0.625rem;">Guides</a>
+            <span class="text-muted" aria-hidden="true">·</span>
+            <a href="/glossary" style="margin: 0 0.625rem;">Glossary</a>
+            <span class="text-muted" aria-hidden="true">·</span>
+            <a href="/compare" style="margin: 0 0.625rem;">Comparisons</a>
+            <span class="text-muted" aria-hidden="true">·</span>
+            <a href="/use-cases" style="margin: 0 0.625rem;">Use Cases</a>
+          </p>
+        </div>
       </div>
     </section>
   )}
