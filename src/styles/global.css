@@ -64,18 +64,15 @@ h4 { font-size: 1.125rem; }
   margin-bottom: 1rem;
 }
 
-/* Reset .label badge styling inside mermaid SVGs (rehype-mermaid emits
-   <g class="label"> wrappers whose width was sized for plain Arial; the
-   badge's uppercase + letter-spacing overflows the box). */
-svg .label,
-svg .nodeLabel,
-svg .edgeLabel,
-svg .nodeLabel p,
-svg .nodeLabel span,
-svg .edgeLabel p,
-svg .edgeLabel span,
-svg foreignObject span,
-svg foreignObject p {
+/* Reset .label badge styling inside rehype-mermaid SVGs only. Mermaid
+   emits <g class="label"> wrappers that would otherwise inherit the
+   site's badge style and overflow the box. Scoped to svg[id^=mermaid-]
+   so future inline SVG icons elsewhere on the site are unaffected. */
+svg[id^="mermaid-"] .label,
+svg[id^="mermaid-"] .nodeLabel,
+svg[id^="mermaid-"] .edgeLabel,
+svg[id^="mermaid-"] foreignObject span,
+svg[id^="mermaid-"] foreignObject p {
   text-transform: none;
   letter-spacing: normal;
   font-weight: 400;
