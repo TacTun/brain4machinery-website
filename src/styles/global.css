@@ -64,6 +64,27 @@ h4 { font-size: 1.125rem; }
   margin-bottom: 1rem;
 }
 
+/* Reset .label badge styling inside mermaid SVGs (rehype-mermaid emits
+   <g class="label"> wrappers whose width was sized for plain Arial; the
+   badge's uppercase + letter-spacing overflows the box). */
+svg .label,
+svg .nodeLabel,
+svg .edgeLabel,
+svg .nodeLabel p,
+svg .nodeLabel span,
+svg .edgeLabel p,
+svg .edgeLabel span,
+svg foreignObject span,
+svg foreignObject p {
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: 400;
+  background: none;
+  padding: 0;
+  margin: 0;
+  border-radius: 0;
+}
+
 /* --- Layout --- */
 .container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 1.25rem; }
 .section { padding: 5rem 0; }

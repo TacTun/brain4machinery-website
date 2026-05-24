@@ -71,12 +71,12 @@ Budget compute headroom deliberately. Models grow with every OTA update, and a m
 
 ```mermaid
 flowchart TD
-    A["Workload ≤ 40 TOPS<br/>single-camera / basic depth"] --> B["Orin Nano 8GB<br/>7–25 W · −25 °C min"]
-    C["40–157 TOPS<br/>multi-camera / VLM<br/>sealed enclosure"] --> D["Orin NX 16GB<br/>10–40 W · −25 °C min"]
-    E[">157 TOPS<br/>OR −40 °C ambient"] --> F["AGX Orin Industrial<br/>15–75 W · −40 °C min"]
-    B --> G["Commercial EOL: Jan 2032"]
+    A["≤ 40 TOPS<br/>single-camera<br/>basic depth"] --> B["Orin Nano 8GB<br/>7–25 W<br/>−25 °C min"]
+    C["40–157 TOPS<br/>multi-camera or VLM<br/>sealed enclosure"] --> D["Orin NX 16GB<br/>10–40 W<br/>−25 °C min"]
+    E["&gt; 157 TOPS<br/>or −40 °C ambient"] --> F["AGX Orin Industrial<br/>15–75 W<br/>−40 °C min"]
+    B --> G["Commercial EOL<br/>Jan 2032"]
     D --> G
-    F --> H["Industrial EOL: Jul 2033"]
+    F --> H["Industrial EOL<br/>Jul 2033"]
 ```
 
 ## Power tree design for a 12–72 V mobile platform
@@ -85,18 +85,22 @@ A mobile robot's battery bus is not a clean supply. A 48 V LiFePO₄ pack throws
 
 The power tree starts with protection, not regulation. ISO 7637-2 defines the transient pulse family for 12 V and 24 V road-vehicle systems: Pulse 1 covers load dump, Pulses 2a/2b cover alternator field-decay transients, and Pulses 3a/3b cover rapid switching events. For 48 V and 72 V mobile platforms, IEC 61000-4-5 surge immunity testing using a 1.2/50 µs waveform covers the higher-voltage analogs. A TVS diode rated to the worst-case pulse energy, combined with a surge-stopper IC (e.g., Analog Devices LT4363) rated for the expected transient peak, prevents transients from reaching the downstream regulator.
 
-After the protection stage, an isolated DC-DC converter steps battery voltage to VDD_IN. The Jetson Orin Nano and Orin NX both accept VDD_IN in the 4.75–20 V range. Isolated DC-DC modules such as the Vicor DCM2322 can span the wide battery input range and deliver regulated VDD_IN with hardware-enforced isolation between the traction bus and the logic domain — sufficient to power an Orin NX, an FPGA co-processor, and a gate-driver stage from a single unregulated battery rail.
+After the protection stage, an isolated DC-DC converter steps battery voltage to VDD_IN. The Jetson Orin Nano and Orin NX both accept VDD_IN in the 4.75–20 V range. Isolated DC-DC modules such as the Vicor DCM2322 can span the wide battery input range and deliver regulated VDD_IN with hardware-enforced isolation between the traction bus and the logic domain — sufficient to power an Orin NX, a [companion FPGA for real-time motor control](#io-expansion-when-the-jetsons-native-interfaces-are-not-enough) (covered later in this guide), and a gate-driver stage from a single unregulated battery rail.
 
-One detail that catches first-time carrier board designers: the Jetson module's onboard PMIC generates the sub-5 V SoC supply rails internally. The carrier board is not responsible for discrete 3.3 V or 1.8 V regulation to the module itself. It may need to supply a 1.8 V VDD_IO for certain I/O bank configurations on specific interface options — the exact sequencing requirements are in the NVIDIA Jetson Orin NX Product Design Guide (gated download from NVIDIA's developer portal).
+One detail that catches first-time carrier board designers: the Jetson module's onboard PMIC generates the sub-5 V SoC supply rails internally. The carrier board is not responsible for discrete 3.3 V or 1.8 V regulation to the module itself. It may need to supply a 1.8 V VDD_IO for certain I/O bank configurations on specific interface options — the exact sequencing requirements are in the NVIDIA Jetson Orin NX Product Design Guide.
 
 Add inrush limiting before the regulator input. Cold-start inrush on a 48 V bus into a 100 µF input capacitor reaches tens of amps instantaneously. A NTC thermistor or active soft-start circuit limits the peak to what connector contacts and PCB traces can sustain over a five-year field life of daily power cycles.
 
-<figure>
-  <img src="/assets/posts/custom-jetson-carrier-board-design/power-tree-block-diagram.png"
-       alt="Block diagram of a custom Jetson carrier board power tree: a 12–72 V DC mobile robot battery bus feeds an ISO 7637-2 transient protection and reverse-polarity stage, then an isolated DC-DC converter, which outputs VDD_IN to a Jetson Orin NX module and a parallel 1.8 V VDD_IO rail for I/O banks. An FPGA power domain branches from the same isolated DC-DC output. Key voltage levels and ISO/IEC standard references are labeled at each stage." />
-  <figcaption>Carrier board power tree for a 12–72 V mobile robot, from battery bus to Jetson VDD_IN.</figcaption>
-</figure>
-{/* image_brief: Clean technical line-drawing schematic block diagram (black on white, professional embedded-hardware illustration style). Left-to-right flow: "12–72 V Battery Bus" → TVS + surge stopper protection block (label "ISO 7637-2 / IEC 61000-4-5") → reverse-polarity + inrush limiting block → isolated DC-DC converter (label "Vicor DCM2322 or equivalent") → VDD_IN to Jetson Orin NX module + separate 1.8 V VDD_IO rail for I/O banks. FPGA power block branches in parallel from DC-DC output. Label voltage rails numerically at each stage. Commission from a freelance embedded hardware illustrator, or generate via DALL-E with prompt: "clean engineering schematic block diagram, mobile robot carrier board power tree, 12-72V battery bus through transient protection and isolated DC-DC to Jetson module, technical line drawing, white background, black lines, professional style." */}
+```mermaid
+flowchart LR
+    A["12–72 V<br/>battery bus"] --> B["TVS + surge stopper<br/>ISO 7637-2<br/>IEC 61000-4-5"]
+    B --> C["Reverse-polarity<br/>+ inrush limiting"]
+    C --> D["Isolated DC-DC<br/>e.g. Vicor DCM2322"]
+    D --> E["VDD_IN 4.75–20 V<br/>Jetson Orin NX"]
+    D --> F["1.8 V VDD_IO<br/>I/O banks"]
+    D --> G["Companion FPGA<br/>power domain"]
+```
+*Carrier board power tree for a 12–72 V mobile robot, from battery bus to Jetson VDD_IN.*
 
 ## Thermal design inside sealed enclosures
 
