@@ -1,6 +1,6 @@
 # TACTUN — brain4machinery.com — Full content snapshot
 
-Auto-generated. For citation by LLMs. Last regenerated: 2026-05-23T11:16:24.246Z
+Auto-generated. For citation by LLMs. Last regenerated: 2026-05-24T07:59:51.729Z
 
 ---
 url: https://brain4machinery.com/guides/custom-jetson-carrier-board-design
@@ -98,7 +98,7 @@ The Orin NX 16GB ships with 2× CAN FD, 3× USB 3.2, multiple MIPI CSI-2 camera 
 
 For motor control, it does not. Closing a servo current loop at 1 kHz from Linux requires a deterministic SPI transaction on every cycle with no missed deadlines — a guarantee Linux scheduling cannot provide. Publishing EtherCAT packets with cycle times ≤ 100 µs and jitter well below 1 µs requires an FPGA-based Fieldbus Memory Management Unit; standard Linux Ethernet drivers cannot approach that timing. Implementing ISO 13849-1 PLd or PLe safety interlocks — emergency-stop inputs, light-curtain channels, gate-driver enables — requires hardware timing that Linux cannot bound to PFHd < 10⁻⁶ per hour (PLd) or < 10⁻⁷ per hour (PLe).
 
-These are the conditions that justify adding an FPGA co-processor to the same carrier board. The [FPGA real-time control](/platform#capabilities) layer owns the motor PWM outputs, encoder interfaces, EtherCAT slave stack, and safety I/O. The Jetson handles perception, planning, and setpoint generation over a PCIe or SPI bridge on the same PCB. The result is an [AI-native controller architecture](/glossary/ai-native-controller-primer) where deterministic hardware timing and AI inference share a single production board. The [FPGA + Jetson hybrid architecture guide](/blog/fpga-jetson-hybrid-architecture) covers interconnect selection, FPGA family trade-offs, and the full safety partitioning pattern in detail.
+These are the conditions that justify adding an FPGA co-processor to the same carrier board. The [FPGA real-time control](/platform#capabilities) layer owns the motor PWM outputs, encoder interfaces, EtherCAT slave stack, and safety I/O. The Jetson handles perception, planning, and setpoint generation over a PCIe or SPI bridge on the same PCB. The result is an [AI-native controller architecture](/glossary/ai-native-controller-primer) where deterministic hardware timing and AI inference share a single production board. The [FPGA + Jetson hybrid architecture guide](/guides/fpga-jetson-hybrid-architecture) covers interconnect selection, FPGA family trade-offs, and the full safety partitioning pattern in detail.
 
 ## EMC and EMI: the ground-plane reality
 
