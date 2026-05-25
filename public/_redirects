@@ -1,12 +1,16 @@
 # Cloudflare Pages redirects
-# Preserve every URL the legacy a2hosting site served (with .html) by 301-ing to the clean Astro paths.
 
-/index.html        /              301
-/platform.html     /platform      301
-/use-cases.html    /use-cases     301
-/about.html        /about         301
-/contact.html      /contact       301
-/privacy.html      /privacy       301
+# Canonicalize host: www.brain4machinery.com → brain4machinery.com (301)
+https://www.brain4machinery.com/*  https://brain4machinery.com/:splat  301!
+
+# Preserve every URL the legacy a2hosting site served (with .html) by 301-ing to the clean Astro paths.
+# Targets use trailing slashes to match Astro's trailingSlash:'always' — avoids a second redirect hop.
+/index.html        /                301
+/platform.html     /platform/       301
+/use-cases.html    /use-cases/      301
+/about.html        /about/          301
+/contact.html      /contact/        301
+/privacy.html      /privacy/        301
 
 # PHP form endpoint moved to a Pages Function
-/contact.php       /api/contact   308
+/contact.php       /api/contact     308

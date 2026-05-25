@@ -27,7 +27,9 @@ const {
 } = Astro.props;
 
 const siteUrl = 'https://brain4machinery.com';
-const canonicalUrl = canonical || new URL(Astro.url.pathname, siteUrl).toString();
+const rawPath = Astro.url.pathname;
+const normalizedPath = rawPath === '/' || rawPath.endsWith('/') ? rawPath : `${rawPath}/`;
+const canonicalUrl = canonical || new URL(normalizedPath, siteUrl).toString();
 const ogImageUrl = new URL(ogImage, siteUrl).toString();
 
 const orgJsonLd = {

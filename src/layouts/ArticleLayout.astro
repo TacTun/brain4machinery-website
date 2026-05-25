@@ -28,6 +28,8 @@ const {
 } = Astro.props;
 
 const siteUrl = 'https://brain4machinery.com';
+const rawPath = Astro.url.pathname;
+const normalizedPath = rawPath === '/' || rawPath.endsWith('/') ? rawPath : `${rawPath}/`;
 const articleJsonLd = {
   '@context': 'https://schema.org',
   '@type': jsonLdType,
@@ -49,7 +51,7 @@ const articleJsonLd = {
   },
   mainEntityOfPage: {
     '@type': 'WebPage',
-    '@id': new URL(Astro.url.pathname, siteUrl).toString(),
+    '@id': canonical || new URL(normalizedPath, siteUrl).toString(),
   },
 };
 ---
