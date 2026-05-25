@@ -21,7 +21,10 @@ const mermaidOptions = {
 
 export default defineConfig({
   site: 'https://brain4machinery.com',
-  trailingSlash: 'ignore',
+  trailingSlash: 'always',
+  build: {
+    format: 'directory',
+  },
   markdown: {
     syntaxHighlight: {
       type: 'shiki',

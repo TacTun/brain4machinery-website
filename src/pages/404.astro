@@ -1,0 +1,39 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+<BaseLayout
+  title="Page not found — TACTUN"
+  description="The page you're looking for doesn't exist on brain4machinery.com."
+  active=""
+  noIndex={true}
+>
+  <section class="section">
+    <div class="container">
+      <div style="max-width: 640px; margin: 0 auto; padding-top: calc(72px + 2rem); padding-bottom: 4rem; text-align: center;">
+        <p class="label" style="margin-bottom: 0.75rem;">404</p>
+        <h1 style="margin-bottom: 1rem;">Page not found</h1>
+        <p class="text-muted" style="font-size: 1.0625rem; margin-bottom: 2rem;">
+          The page you're looking for doesn't exist or may have moved.
+        </p>
+        <div class="hero__buttons" style="justify-content: center;">
+          <a href="/" class="btn btn--primary">Back to home</a>
+          <a href="/contact" class="btn btn--secondary">Contact us</a>
+        </div>
+        <div style="margin-top: 2.5rem;">
+          <p class="text-muted" style="margin-bottom: 0.875rem; font-size: 0.9375rem;">Browse by section:</p>
+          <p style="margin: 0; font-size: 1rem;">
+            <a href="/platform" style="margin: 0 0.625rem;">Platform</a>
+            <span class="text-muted" aria-hidden="true">·</span>
+            <a href="/use-cases" style="margin: 0 0.625rem;">Use Cases</a>
+            <span class="text-muted" aria-hidden="true">·</span>
+            <a href="/blog" style="margin: 0 0.625rem;">Blog</a>
+            <span class="text-muted" aria-hidden="true">·</span>
+            <a href="/guides" style="margin: 0 0.625rem;">Guides</a>
+            <span class="text-muted" aria-hidden="true">·</span>
+            <a href="/glossary" style="margin: 0 0.625rem;">Glossary</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
