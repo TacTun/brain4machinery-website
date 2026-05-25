@@ -1,7 +1,6 @@
 # Cloudflare Pages redirects
-
-# Canonicalize host: www.brain4machinery.com → brain4machinery.com (301)
-https://www.brain4machinery.com/*  https://brain4machinery.com/:splat  301!
+# Note: the www→apex redirect is handled in functions/_middleware.ts
+# because _redirects does not support hostname-based source matching.
 
 # Preserve every URL the legacy a2hosting site served (with .html) by 301-ing to the clean Astro paths.
 # Targets use trailing slashes to match Astro's trailingSlash:'always' — avoids a second redirect hop.
