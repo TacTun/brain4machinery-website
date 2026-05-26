@@ -1,7 +1,24 @@
 name: Deploy to Cloudflare Pages
 
+# Triggers
+# - push to main          → production deploy (--branch=main on CF Pages)
+# - push to article/**    → preview deploy on the branch name. Cloudflare
+#                            Pages exposes each non-production branch at
+#                            <branch>.brain4machinery-website.pages.dev,
+#                            giving the content pipeline (and any human
+#                            reviewer / CTO) a self-contained, forwardable
+#                            URL to read the article in its real layout
+#                            BEFORE it merges to main.
+# - pull_request          → same preview-branch deploy for any PR, so
+#                            reviewers can open the article rendered
+#                            without checking out the branch locally.
+# - workflow_dispatch     → manual trigger.
 on:
   push:
+    branches:
+      - main
+      - 'article/**'
+  pull_request:
     branches: [main]
   workflow_dispatch:
 
@@ -11,6 +28,7 @@ jobs:
     permissions:
       contents: read
       deployments: write
+      pull-requests: write  # to comment the preview URL back on the PR
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -25,14 +43,49 @@ jobs:
       - run: npm run lint:facts
       - run: npm run build
       - run: npm run lint:links
+
+      # Resolve the branch name for Cloudflare Pages:
+      # - on push          → github.ref_name (e.g. "main" or "article/foo")
+      # - on pull_request  → github.head_ref (the PR's source branch)
+      # CF Pages treats anything ≠ main as a preview deployment with its own
+      # subdomain. Sanitize "/" → "-" for the URL slug; CF does this anyway
+      # but doing it ourselves keeps the comment-back text accurate.
+      - name: Resolve CF Pages branch
+        id: cfbranch
+        run: |
+          RAW="${{ github.head_ref || github.ref_name }}"
+          SLUG="${RAW//\//-}"
+          echo "raw=$RAW"   >> $GITHUB_OUTPUT
+          echo "slug=$SLUG" >> $GITHUB_OUTPUT
+
       - name: Publish to Cloudflare Pages
+        id: publish
         uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --project-name=brain4machinery-website --branch=main
+          command: pages deploy dist --project-name=brain4machinery-website --branch=${{ steps.cfbranch.outputs.raw }}
+
+      # On PRs, post the preview URL as a comment so the reviewer (and any
+      # forwarded CTO) gets a clickable, self-contained link in their inbox
+      # without having to dig through CF Pages dashboards.
+      - name: Comment preview URL on PR
+        if: github.event_name == 'pull_request' && steps.cfbranch.outputs.slug != 'main'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: cf-preview
+          message: |
+            ### 🌐 Cloudflare Pages preview
+            **Preview URL:** https://${{ steps.cfbranch.outputs.slug }}.brain4machinery-website.pages.dev
+
+            This URL renders the site exactly as it will look on production. Forward this email/URL
+            to anyone who needs to review — no GitHub account required.
+
+      # Only fire the engine-deploy notifier for ACTUAL production deploys
+      # (push to main). Preview deploys should not log themselves as a real
+      # publication in the engine's state/analytics/deploys.log.
       - name: Notify engine of deploy
-        if: success() && env.ENGINE_DISPATCH_TOKEN != ''
+        if: success() && github.ref == 'refs/heads/main' && github.event_name == 'push' && env.ENGINE_DISPATCH_TOKEN != ''
         env:
           ENGINE_DISPATCH_TOKEN: ${{ secrets.ENGINE_DISPATCH_TOKEN }}
         uses: peter-evans/repository-dispatch@v4
