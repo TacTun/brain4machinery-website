@@ -1,0 +1,276 @@
+---
+title: "Top 10 hardware brains for service robotics (2026): an engineer's ranking"
+description: "Engineer-honest ranking of 10 hardware brains for service robotics in 2026. Real specs, named weaknesses, and deployment guidance by vertical."
+publishedDate: 2026-05-27
+author: "Rafayel Ghasabyan"
+primaryKeyword: "top 10 hardware brains for service robotics"
+secondaryKeywords:
+  - "hardware brain for service robotics"
+  - "best controller for service robots"
+  - "controller platform service robotics"
+  - "robot brain comparison"
+  - "edge AI compute for service robots"
+jsonLdType: "Article"
+canonical: "https://brain4machinery.com/guides/top-10-hardware-brains-for-service-robotics"
+tlDr: "No single off-the-shelf brain delivers both 275 TOPS of AI compute and sub-10 µs real-time determinism. This ranking scores 10 platforms across eight criteria — compute headroom, scheduling jitter, motor I/O, power envelope, ecosystem maturity, lifecycle, cost, and safety certification — so you can match hardware architecture to the demands of your service-robot program."
+difficulty: "intermediate"
+estimatedReadMinutes: 14
+faq:
+  - q: "What makes a hardware platform a 'brain' for service robotics versus just a compute board?"
+    a: "A service-robotics brain is a deployable unit that integrates compute, communication, power conditioning, and (ideally) real-time control in a qualified package. A bare compute module like a Jetson Orin NX needs a carrier board before it can run in a machine — the carrier handles power input, connector layout, thermal management, and peripheral I/O. In this ranking, 'brain' means compute module plus carrier, or an integrated fanless box PC like the Forecr DSBOX-ORNX or Stereolabs ZED Box."
+  - q: "Do I need an FPGA co-processor for my service robot?"
+    a: "Only if your control loop must close faster than 1 kHz or if you need hardware-timed safety interlocks. PREEMPT_RT Linux handles 20–200 µs scheduling latency under well-controlled conditions, which is sufficient for wheel-velocity and arm-trajectory loops running at 200–500 Hz. If you're closing a force-control loop at 1 kHz or faster, or if ISO 13849-1 PLd/PLe requires a hardware safety function, you need an FPGA co-processor, a dedicated safety MCU, or a drive with a hardware control loop — as found in TACTUN, Beckhoff TwinSAFE, and Synapticon SOMANET."
+  - q: "Which platform is best for a hospital delivery robot?"
+    a: "For a robot that navigates corridors and avoids obstacles with cameras, a Jetson Orin NX-based platform is the cost-effective choice. ConnectTech Boson-22 suits teams that want a compact, camera-focused carrier; ADLINK ROScube-X works well if ROS 2 is the development target; Forecr DSBOX-ORNX adds an operating temperature range of −25 °C to +55 °C if the deployment goes outdoors. Motor counts are typically low (2–4 wheels), real-time demands are modest (200–500 Hz), and 70–157 TOPS handles stereo depth and obstacle detection without thermal issues."
+  - q: "How do Beckhoff TwinCAT 3 and Synapticon SOMANET compare for motor control?"
+    a: "They sit at different levels of the control stack. Beckhoff CX + TwinCAT 3 is a full machine controller: multi-axis coordination (up to 256 axes), IEC 61131-3 PLC logic, optional TwinSAFE for ISO 13849-1 compliance, and a minimum EtherCAT cycle time of 50 µs. Synapticon SOMANET Circulo is an axis-level servo drive: its torque/current loop runs at 16 kHz (firmware v4.2.0) with FSoE at a 7 ms safety cycle, rated to 60 V and 60 A_rms. Beckhoff is the system controller; Synapticon is the drive layer. They can coexist on the same EtherCAT network."
+  - q: "Why can't I use PREEMPT_RT on Jetson for all real-time control?"
+    a: "You can, for many applications. PREEMPT_RT reduces Linux scheduling latency to 20–200 µs under well-controlled conditions. The limitation is that the Jetson RT kernel ships as Developer Preview quality as of JetPack r36.5, and hardware components on Jetson platforms — power management controllers, TPM, interrupt coalescing — can inject tail latencies beyond 200 µs under load. Applications that need hard guarantees rather than probabilistic bounds, or control loops faster than 1 kHz, require a dedicated co-processor: FPGA, RTOS MCU, or a safety-rated servo drive with a hardware control loop."
+  - q: "What is wrong with using a Raspberry Pi or a Jetson developer kit in a production service robot?"
+    a: "Nothing for prototyping. But production service robots need hardware that has passed EMC qualification, carries defined operating temperature and vibration specs, and comes with a commercial lifetime commitment. Raspberry Pi boards are consumer-grade SBCs with no industrial lifecycle guarantee. Jetson developer kits are evaluation hardware that NVIDIA explicitly marks not for production use. Once you commit to either in a product design, you own all the qualification work that a purpose-built carrier board vendor or embedded box PC vendor would otherwise have handled."
+  - q: "How does TACTUN's co-designed control spine compare to an off-the-shelf carrier board?"
+    a: "An off-the-shelf carrier (ConnectTech Boson-22, Forecr DSBOX-ORNX, ADLINK ROScube-X) delivers a qualified, available hardware platform in days — fixed I/O map, no native motor control, and the integrator handles real-time determinism and EMI hardening. TACTUN co-designs the board to your actuator set, integrates FPGA-based motor control and safety logic on the same PCB, and charges $0 NRE — the customer pays only for production hardware. Board architecture is scoped in 5 business days; prototypes deliver in 3–5 months. The off-the-shelf path is faster to first prototype; the co-designed path eliminates integration tax at production scale."
+  - q: "What safety certifications should I check when selecting a service-robot control platform?"
+    a: "Start with ISO 13849-1 (safety of machinery — Performance Levels PLa–PLe) and IEC 61508 (functional safety SIL 1–4). ISO 13849-1 applies to any machine control system with safety-related functions; IEC 61508 is the baseline from which ISO 13849 derives. Beckhoff TwinSAFE and Synapticon FSoE both address ISO 13849-1 at the platform level. For the software environment, IEC 61131-3 compliance (PLC programming languages) simplifies OT team adoption. For medical or surgical deployments, also check IEC 62061 (functional safety for machinery) and IEC 60601-1 (medical electrical equipment)."
+---
+
+## The problem you're solving before you pick a brain
+
+Specifying a service-robot control platform sounds simpler than it is. You need AI compute for perception — object detection, semantic mapping, depth estimation. You need deterministic real-time control for motors — servo loops closing at 500 Hz to 1 kHz, safety interlocks that cut power in hardware time. And you need both in a form factor that fits your enclosure, survives the operating environment, and holds a stable BOM for five years.
+
+The [NVIDIA Jetson](/platform) family handles the perception side well. A Jetson Orin NX 16 GB delivers 157 TOPS in a 25 W envelope — enough for concurrent object detection and stereo depth processing. But Linux scheduling jitter on Jetson, even with PREEMPT_RT enabled, runs 20–200 µs under well-controlled conditions, with tail latencies climbing higher under load. The Jetson RT kernel remains Developer Preview quality as of JetPack r36.5. For a corridor robot correcting wheel velocity at 200 Hz, that is fine. For a collaborative arm closing a force control loop at 1 kHz, it is not.
+
+The PLC-grade platforms solve the real-time half. Beckhoff's TwinCAT 3 achieves EtherCAT cycle times as low as 50 µs with its XFC technology and can coordinate up to 256 axes from a single controller. Synapticon SOMANET Circulo runs its torque and current control loop at 16 kHz (firmware v4.2.0). But neither ships with on-device AI inference compute. If your robot needs both closed-loop force control and camera-based scene understanding, you're integrating two separate control planes, synchronizing them over a fieldbus, and hardening both for EMI — then supporting that combined BOM for the life of the product.
+
+That integration cost is the real problem. Most programs underestimate it by 12–18 months. Building an equivalent AI-plus-real-time-control platform from scratch typically costs $900K–$2M+ and 18–24 months of engineering time. The platforms in this list represent the alternatives — each with a different trade-off between AI headroom, determinism, and integration burden.
+
+<figure>
+  <img src="/assets/posts/top-10-hardware-brains-for-service-robotics/service-robot-control-architecture.png"
+       alt="Block diagram comparing a Jetson-only architecture (perception only, no real-time motor control) versus a Jetson-plus-FPGA co-designed architecture (perception and deterministic control on one PCB), illustrating the integration gap each approach leaves open." />
+  <figcaption>The control architecture gap: perception-only Jetson carriers versus a co-designed AI-plus-real-time spine.</figcaption>
+</figure>
+{/* image_brief: Line-drawing / technical diagram with two side-by-side block diagrams. Left block: Jetson module → carrier board → "fieldbus →" separate motor controller; shows the integration boundary as a dashed line. Right block: Jetson module + FPGA on one PCB, shared power rail, direct motor I/O lines. Clean monochrome style consistent with technical datasheets. Commission from a technical illustrator or generate via DALL-E with prompt: "Two-panel engineering block diagram, white background, monochrome, technical line-drawing style: left panel labeled 'Jetson carrier + separate motor controller' showing two boxes connected by a fieldbus dashed line; right panel labeled 'Co-designed AI + FPGA spine' showing one unified box with motor drive outputs." */}
+
+## Eight criteria, ranked and declared up-front
+
+Every platform review has hidden criteria. Here are the eight we scored, stated before the rankings:
+
+| # | Criterion | What we measured |
+|---|---|---|
+| 1 | **AI compute headroom** | Peak TOPS and sustained inference wattage |
+| 2 | **Real-time determinism** | Control-loop rate or scheduling jitter floor |
+| 3 | **Motor-control I/O** | Native servo, stepper, hydraulic, pneumatic support |
+| 4 | **Power envelope** | Sustained inference TDP, minimum operating wattage |
+| 5 | **Software ecosystem** | ROS 2 maturity, EtherCAT support, vendor SDK quality |
+| 6 | **Industrial lifecycle** | EOL horizon, BOM stability at 100–1,000 unit volumes |
+| 7 | **Price-per-deployment** | Cost signal at 100–1,000 units (where published) |
+| 8 | **Certification story** | ISO 13849-1, IEC 61508, FSoE support |
+
+No single platform wins every column. The ranking reflects the full eight-criterion score for a general-purpose service-robotics program.
+
+## The 10 platforms
+
+### 1. NVIDIA Jetson AGX Orin — the compute reference
+
+The AGX Orin delivers up to 275 TOPS across its module family (32 GB, 64 GB, and Industrial variants) with a configurable power envelope from 15 W to 60 W. NVIDIA Ampere GPU architecture and dual Deep Learning Accelerators handle simultaneous object detection, semantic segmentation, and depth inference without thermal throttling in the 40 W mode. The Industrial variant carries a 10-year lifecycle commitment.
+
+**Strengths:** Highest TOPS of any sub-100 W embedded module; deep ROS 2 ecosystem; NVIDIA Isaac ROS packages accelerate perception pipeline bring-up; long Industrial lifecycle simplifies BOM planning.
+
+**Weaknesses:** Requires a carrier board to be deployable — the module alone ships with no power conditioning, no I/O, and no mechanical interface. Linux scheduling jitter (20–200 µs with PREEMPT_RT, Developer Preview on JetPack r36.5) means real-time motor control must be handled externally. No native motor-control I/O.
+
+**Best for:** Perception-heavy applications with four or more cameras — inspection robots, AMRs in unstructured environments, surgical assist vision platforms.
+
+---
+
+### 2. NVIDIA Jetson Orin NX — compact AI for cost-sensitive programs
+
+The Orin NX 16 GB delivers 157 TOPS at a configurable 10–25 W — the smallest Jetson form factor currently available — integrating NVIDIA Ampere architecture and dual DLAs into a module that fits where an AGX Orin won't. The 8 GB variant drops to 70 TOPS, trading compute headroom for a lower power floor.
+
+**Strengths:** Best TOPS-per-watt in the Jetson family at this price tier; large ecosystem of production-qualified Orin NX carriers (Boson-22, DSBOX-ORNX, ZED Box) for almost every deployment context; same JetPack SDK as AGX Orin means software ports over cleanly.
+
+**Weaknesses:** Real-time determinism identical to AGX Orin — PREEMPT_RT jitter still 20–200 µs under well-controlled conditions; no on-module motor I/O. The 8 GB variant constrains concurrent inference workloads.
+
+**Best for:** Delivery robots, concierge robots, and compact mobile platforms where AI workload fits within 157 TOPS and motor count stays at four axes or fewer.
+
+---
+
+### 3. TACTUN co-designed AI-native control spine — best for OEM production
+
+TACTUN co-designs a board that pairs a Jetson module (Orin NX or AGX Orin, matched to the application's AI compute requirements) with a custom FPGA block on a single PCB. The FPGA handles deterministic real-time control — servo, stepper, hydraulic, and pneumatic actuators — while the Jetson processes camera and sensor feeds for perception. Because both compute planes share the same board, there is no fieldbus boundary between AI inference and the control loop.
+
+The result is sub-10 µs real-time latency alongside up to 275 TOPS of AI compute in one package — the combination that no off-the-shelf carrier achieves. The tailored I/O design matches your actuator set: connector types, pinout, power rails, and EMI layout are all defined for your specific machine, not a generic use case. Safety logic and machine state management run on-chip.
+
+**Strengths:** Sub-10 µs control loop latency alongside GPU-class inference; tailored I/O — no integration work to add motor control or ruggedize for EMI; $0 NRE (customer pays only for production hardware); board architecture scoped in 5 business days; prototypes in 3–5 months.
+
+**Weaknesses:** Not a catalog item — production units take 3–5 months; higher per-unit cost than an off-the-shelf carrier at low volumes; requires a co-design engagement, not a datasheet order.
+
+**Best for:** OEMs running 50–1,000 units per year where integration cost over a five-year deployment exceeds the co-design timeline, and where sub-100 µs control loops or custom I/O are mandatory. This is the [AI-native controller](/glossary/ai-native-controller-primer) architecture applied to a production-grade control spine.
+
+---
+
+### 4. ConnectTech Boson-22 / Rogue — production-qualified Jetson carriers
+
+ConnectTech designs production-grade Jetson carrier boards for robotics and industrial OEMs. The **Boson-22** targets Jetson Orin NX and Orin Nano with four 22-pin MIPI CSI-2 camera connectors, dual Gigabit Ethernet, dual USB NVMe slots, and a 9–36 V wide-input power rail — direct camera integration without an adapter board. The **Rogue-RX** (AGX203) targets harsh-environment AGX Orin deployments with positive-locking high-speed connectors, 2× 10GbE ports, and HDMI 2.1 output.
+
+**Strengths:** Production-quality carrier designs with full Jetson compliance; wide power-input range; strong hardware support track record; MIPI CSI-2 direct-mount simplifies camera integration.
+
+**Weaknesses:** No native motor-control I/O; real-time determinism bounded by Jetson Linux; safety certification falls entirely on the system integrator.
+
+**Best for:** Teams that have already solved motor control externally and need a well-supported, compliant carrier for the perception stack.
+
+---
+
+### 5. Forecr DSBOX-ORNX — industrial fanless box for field deployments
+
+An industrial fanless PC around the Jetson Orin NX: 110 × 130 × 67 mm, 760 g, rated −25 °C to +55 °C on a 9–28 V DC input. The DSBOX-ORNX ships with 1× CAN bus, 1× RS232, 1× RS422, 2× USB 3.1, and dual M.2 NVMe slots. No moving parts. This is the platform to reach for when you need Orin NX compute inside a field-service or outdoor enclosure without designing a carrier board.
+
+**Strengths:** Off-the-shelf availability; widest operating temperature range of any Orin NX solution in this list; CAN and serial interfaces built in; fanless design eliminates filter maintenance.
+
+**Weaknesses:** CAN interface is limited for multi-axis servo control; no EtherCAT or dedicated safety I/O; fixed I/O map can't be adapted without a custom design.
+
+**Best for:** Outdoor inspection robots, utility vehicles, and field-service mobile platforms in temperature-variable environments where a standard CAN/serial I/O set is sufficient.
+
+---
+
+### 6. ADLINK ROScube-X RQX-59 — ROS 2-native Jetson appliance
+
+ADLINK's ROScube-X is an appliance-style platform pre-configured for ROS 2. The RQX-59 pairs a Jetson AGX Orin module (40 W operating point) with Ubuntu 20.04 L4T, ADLINK's Neuron SDK, and connectors for up to 8 GMSL2 or FPD-Link III cameras with hardware frame synchronization. Sensor fusion from cameras and LiDAR works before any custom BSP work — the highest native camera count in this list.
+
+**Strengths:** Best ROS 2 integration of any platform here; 8-camera GMSL2 support; Neuron SDK accelerates perception pipeline bring-up; targets exactly the stack most mobile robot teams are already building.
+
+**Weaknesses:** AGX Orin Linux determinism limits still apply; no native motor control; heavier per-unit cost than bare carrier boards; tied to ADLINK's SDK maintenance cycle.
+
+**Best for:** Research teams, high-camera-count AMRs, security and inspection platforms where ROS 2 is the target stack and perception dominates the workload.
+
+---
+
+### 7. Aaeon BOXER-8641AI — fanless AGX Orin box for clean environments
+
+The BOXER-8641AI is Aaeon's fanless embedded box PC on the Jetson AGX Orin module. Note: the BOXER-8253AI — sometimes cited as an Orin platform — is based on Jetson Xavier NX at 21 TOPS, a previous-generation module. The BOXER-8641AI is the correct 2026-current Aaeon entry for AGX Orin compute in a fanless enclosure, delivering up to 275 TOPS without a fan or filter assembly.
+
+The platform runs the same JetPack-based Linux as every other Jetson product, so the PREEMPT_RT scheduling constraint (20–200 µs, Developer Preview on JetPack r36.5) applies here too. If sub-100 µs motor response is required, pair it with a dedicated safety MCU or FPGA drive tier.
+
+**Strengths:** AGX Orin compute in a fanless form factor; off-the-shelf availability; standard JetPack software stack.
+
+**Weaknesses:** Same Linux scheduling constraints as all Jetson-only solutions; limited motor-control I/O; fixed I/O map.
+
+**Best for:** Medical imaging carts, food-service robots, clean-room platforms — anywhere the absence of a fan matters more than custom I/O or hard real-time control.
+
+---
+
+### 8. Beckhoff CX-series + TwinCAT 3 — PLC-grade determinism
+
+The industrial-automation benchmark for deterministic control. Beckhoff CX embedded PCs running TwinCAT 3 achieve EtherCAT cycle times as low as 50 µs with XFC (eXtreme Fast Control) technology, and can coordinate up to 256 axes from a single controller. TwinCAT 3 supports all five IEC 61131-3 programming language types — Ladder Diagram, Function Block Diagram, Structured Text, Instruction List, and Sequential Function Chart. The optional TwinSAFE module enables ISO 13849-1 and IEC 61508 SIL safety logic on the same controller.
+
+**Strengths:** Best real-time determinism of any PC-based controller in this list; 256-axis coordination; IEC 61131-3 compliance matches OT team expectations; TwinSAFE simplifies safety certification; long industrial lifecycle commitment with a stable BOM track record.
+
+**Weaknesses:** No on-device AI inference compute — GPU or NPU integration requires a separate node and fieldbus sync overhead; Beckhoff's AI integration story is still developing in 2026; per-axis licensing scales cost with DOF.
+
+**Best for:** Industrial service manipulators, surgical assist platforms where safety certification and determinism take clear priority over integrated AI compute.
+
+---
+
+### 9. Synapticon SOMANET Circulo — motor-control-first FPGA drive
+
+SOMANET Circulo wires an FPGA-based servo drive directly into an EtherCAT network. Its torque and current control loop runs at 16 kHz (firmware v4.2.0), using a Model-Predictive Deadbeat Field-Oriented Controller rated to 60 V and 60 A_rms per axis. The FSoE (FailSafe over EtherCAT) implementation delivers a 7 ms functional-safety cycle, enabling ISO 13849-1 compliance at the drive level without an external safety relay. SOMANET implements the CiA DS 402 CANopen drive profile over EtherCAT (CoE), which makes it compatible with any TwinCAT controller or ROS 2 motion planner that speaks CoE.
+
+**Strengths:** 16 kHz current loop; FSoE safety at 7 ms cycle; axis-level safety certification; natural pairing with Beckhoff TwinCAT or a separate Jetson AI node over EtherCAT.
+
+**Weaknesses:** Purpose-built for motion control — no AI inference compute at all; axis-level pricing model scales cost linearly with robot DOF; perception stack requires a separate compute node.
+
+**Best for:** High-DOF service manipulators, commercial cleaning robots with precision actuators, field-service platforms where drive-level safety certification from a known vendor is mandatory.
+
+---
+
+### 10. Stereolabs ZED Box — vision-first compute appliance
+
+The ZED Box ships in three compute tiers: Orin NX 16 GB (100 TOPS), Orin NX 8 GB (70 TOPS), and Orin Nano 8 GB (40 TOPS). It accepts up to 4× GMSL2 and 3× USB 3.1 cameras, operates from −20 °C to +50 °C, and includes a PoE+ power input option. Native ZED SDK integration means stereo depth, 3D positional tracking, and object detection are functional faster than with any generic carrier. Starting price: $1,299.
+
+**Strengths:** Fastest time-to-3D-perception in this list; PoE+ input simplifies cabling in structured environments; competitive entry price; ZED SDK covers depth, object detection, and SLAM in a single package.
+
+**Weaknesses:** Tightly coupled to the ZED SDK ecosystem; no motor-control I/O; standard Jetson Linux PREEMPT_RT constraints apply; limited I/O beyond camera inputs.
+
+**Best for:** Security and inspection robots, warehouse AMRs where 3D mapping and obstacle avoidance is the primary engineering challenge.
+
+---
+
+## Platform comparison at a glance
+
+| # | Platform | Core compute | Peak TOPS | Real-time floor | Motor I/O | Temp range |
+|---|---|---|---|---|---|---|
+| 1 | Jetson AGX Orin | Orin SoC | 275 | 20–200 µs (PREEMPT_RT) | None (carrier needed) | Per carrier |
+| 2 | Jetson Orin NX | Orin SoC | 157 | 20–200 µs (PREEMPT_RT) | None | Per carrier |
+| 3 | TACTUN co-designed spine | Jetson + FPGA | Up to 275 | < 10 µs (FPGA) | Servo/stepper/hydraulic/pneumatic | Per design |
+| 4 | ConnectTech Boson-22 / Rogue | Orin NX / AGX Orin | 157 / 275 | 20–200 µs (PREEMPT_RT) | None | 9–36 V input |
+| 5 | Forecr DSBOX-ORNX | Jetson Orin NX | 157 | 20–200 µs (PREEMPT_RT) | 1× CAN, RS232/422 | −25–+55 °C |
+| 6 | ADLINK ROScube-X RQX-59 | Jetson AGX Orin | 275 | 20–200 µs (PREEMPT_RT) | None (8× GMSL2 cameras) | — |
+| 7 | Aaeon BOXER-8641AI | Jetson AGX Orin | 275 | 20–200 µs (PREEMPT_RT) | Limited | Fanless |
+| 8 | Beckhoff CX + TwinCAT 3 | AMD Ryzen + TwinCAT | No GPU/NPU | 50 µs EtherCAT, 256 axes | Full EtherCAT | Industrial |
+| 9 | Synapticon SOMANET Circulo | FPGA servo drive | No AI compute | 16 kHz loop, FSoE 7 ms | 60 V / 60 A_rms per axis | Drive-rated |
+| 10 | Stereolabs ZED Box | Jetson Orin NX | 100 | 20–200 µs (PREEMPT_RT) | None | −20–+50 °C |
+
+## The real-time determinism gap no Jetson carrier closes
+
+Seven of the ten platforms in this list are Jetson-based. That concentration reflects the state of edge AI in service robotics — Jetson is the dominant embedded compute substrate in 2026. But it also means seven of ten share the same real-time control constraint.
+
+PREEMPT_RT Linux handles latency requirements in the 20–200 µs range under well-controlled conditions. The Jetson RT kernel in JetPack r36.5 is developer-preview quality, with CPU DVFS disabled to meet latency targets. Under real load, tail latencies climb. Hardware components on Jetson-based platforms — power management controllers, TPM transactions, and peripheral interrupt coalescing — can inject multi-hundred-microsecond latency spikes that kernel tuning alone cannot eliminate.
+
+Any service-robot application that needs a control loop faster than 1 kHz, sub-100 µs hardware safety interlocks, or hard real-time force control cannot rely on a Jetson-only platform. The three platforms in this list that break the PREEMPT_RT ceiling — TACTUN, Beckhoff, and Synapticon — all route real-time logic through dedicated hardware: an FPGA fabric (TACTUN), TwinCAT running on bare-metal with EtherCAT at 50 µs (Beckhoff), or an FPGA servo drive with a 16 kHz current loop (Synapticon). FPGA-based hardware paths achieve sub-µs fault response — the "< 10 µs" threshold in the comparison table above is conservative.
+
+For a deeper look at how FPGA and Jetson architectures work together, the [FPGA + Jetson hybrid architecture guide](/guides/fpga-jetson-hybrid-architecture) covers the design trade-offs in detail.
+
+## What the TACTUN control spine does differently
+
+The other platforms in this list make a choice: perception compute or deterministic control. The [TACTUN platform](/platform) is co-designed to eliminate that choice for OEM programs with specific I/O, environmental, and real-time requirements.
+
+A TACTUN board pairs a Jetson module — NX or AGX Orin, matched to the AI compute budget — with a custom FPGA block that handles motor drive timing, encoder feedback, and safety interlock logic at sub-10 µs latency on the same PCB, with no fieldbus boundary between the AI plane and the control plane. The founding team brings 14 years of systems integration experience and 800+ controllers shipped across industrial and robotics programs. The [co-design process](/platform#how-we-work) is defined: board architecture scoped in 5 business days, production prototypes in 3–5 months, $0 NRE.
+
+That structure matters for OEMs who need to hit a production gate without an open-ended engineering contract. For a cost-vs-build analysis across the five-year deployment horizon, see the [build-vs-buy robotics controller analysis](/blog/build-vs-buy-robotics-controller).
+
+## Pick by vertical: a decision guide
+
+The flowchart below is a first-pass filter for the most common service-robotics deployment patterns. It maps primary constraint to platform tier — not a replacement for spec review, but a way to cut the list of ten down to two or three candidates fast.
+
+```mermaid
+flowchart TD
+    A[Service robot application] --> B{Primary constraint?}
+    B -->|Maximum AI compute| C[AGX Orin tier]
+    B -->|Size + power budget| D[Orin NX tier]
+    B -->|Hard real-time + AI on one board| E{Volume and I/O?}
+    B -->|3D vision only, no motor control| F[Stereolabs ZED Box]
+    B -->|Safety-certified motion, no AI needed| G{Drive-level or system-level?}
+    C --> C1[ConnectTech Rogue or ADLINK ROScube-X RQX-59]
+    D --> D1[ConnectTech Boson-22, Forecr DSBOX-ORNX, or ZED Box NX]
+    E -->|Custom I/O, 50–1000 units| H[TACTUN co-designed spine]
+    E -->|Standard fieldbus, catalog buy| I[Beckhoff CX + TwinCAT 3]
+    G -->|System-level PLC control| I
+    G -->|Axis-level servo safety| J[Synapticon SOMANET Circulo]
+```
+
+**Service-robotics vertical heuristics** — drawn from the [deployment use cases](/use-cases) the platforms above are most frequently specified for:
+
+- **Hospitality and delivery robots** → Jetson Orin NX platform (ConnectTech Boson-22 or ADLINK ROScube-X): cost-sensitive, perception-heavy, low motor count
+- **Inspection and security robots** → Stereolabs ZED Box or Orin AGX: vision-dominant, low real-time demand
+- **Medical and surgical assist** → Beckhoff CX or TACTUN custom: safety certification + real-time motor control are the non-negotiables
+- **Commercial cleaning and floor robots** → Synapticon SOMANET for drive control, Jetson Orin NX for perception as separate nodes
+- **Field service and mobile platforms** → TACTUN custom or ConnectTech Rogue: ruggedization, EMI hardening, wide temperature range
+
+## What is NOT on this list — and why
+
+Several platforms appear frequently in service-robotics conversations but are excluded deliberately:
+
+**Boston Dynamics Spot SDK** — a proprietary runtime on Spot hardware. You cannot buy the brain separately. Not relevant for OEMs building their own machine.
+
+**iRobot internal stack** — not commercially available to third-party developers or OEMs.
+
+**Universal Robots controller** — a manipulator-specific controller, not a general-purpose service-robot control platform. Evaluating it as a general brain leads to incorrect conclusions.
+
+**Raspberry Pi and Jetson developer kits** — evaluation hardware. Neither carries EMC qualification, defined vibration specs, or a production-grade lifecycle commitment. They are correct for prototyping and wrong for production.
+
+**Pure motor drivers without compute — ODrive, VESC, Trinamic TMC** — excellent drive subsystems, not robot brains. They belong in the motor-control layer underneath the platforms listed above. A SOMANET Circulo is on this list because it integrates EtherCAT, FSoE, and a 16 kHz FPGA control loop — that is qualitatively different from a bare motor driver.
+
+**Qualcomm RB5 / Snapdragon** — a viable perception-only brain, excluded because its ROS 2 ecosystem maturity and EtherCAT support trail the platforms above by a meaningful margin as of 2026.
+
+---
+
+If your motor count, I/O map, or safety requirements are pushing your service-robot program toward custom hardware, [start a conversation with the TACTUN team](/contact). We scope board architectures in 5 business days and can tell you quickly whether a co-designed control spine or an off-the-shelf carrier is the right call for your program and volume.
