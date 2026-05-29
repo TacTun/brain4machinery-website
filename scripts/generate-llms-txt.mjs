@@ -21,10 +21,10 @@ const siteUrl = 'https://brain4machinery.com';
 // Static canonical pages
 const STATIC_PAGES = [
   { url: '/', title: 'TACTUN — Custom Control Systems for Intelligent Machines', desc: 'AI-native controller boards. Board architecture in 5 days. Zero NRE.' },
-  { url: '/platform', title: 'Platform & Technology', desc: 'FPGA real-time deterministic control + NVIDIA Jetson AI compute on a single PCB.' },
-  { url: '/use-cases', title: 'Use Cases', desc: 'AI-native control across agriculture, construction, marine, medical, inspection, food & logistics, solar, materials testing.' },
-  { url: '/about', title: 'About TACTUN', desc: '14 years of systems integration. 800+ controllers shipped. 2 US patents. Team behind the control spine for intelligent machines.' },
-  { url: '/contact', title: 'Contact', desc: 'Tell us about your machine. We deliver custom board architecture in 5 business days.' },
+  { url: '/platform/', title: 'Platform & Technology', desc: 'FPGA real-time deterministic control + NVIDIA Jetson AI compute on a single PCB.' },
+  { url: '/use-cases/', title: 'Use Cases', desc: 'AI-native control across agriculture, construction, marine, medical, inspection, food & logistics, solar, materials testing.' },
+  { url: '/about/', title: 'About TACTUN', desc: '14 years of systems integration. 800+ controllers shipped. 2 US patents. Team behind the control spine for intelligent machines.' },
+  { url: '/contact/', title: 'Contact', desc: 'Tell us about your machine. We deliver custom board architecture in 5 business days.' },
 ];
 
 function parseFrontmatter(text) {
@@ -78,7 +78,7 @@ async function main() {
       if (data.draft === 'true') continue;
       const title = data.title || slug;
       const desc = data.description || '';
-      lines.push(`- [${title}](${siteUrl}/${col}/${slug}): ${desc}`);
+      lines.push(`- [${title}](${siteUrl}/${col}/${slug}/): ${desc}`);
     }
     lines.push(``);
   }
@@ -106,7 +106,7 @@ async function main() {
       const { data, body } = parseFrontmatter(text);
       if (data.draft === 'true') continue;
       fullLines.push(`---`);
-      fullLines.push(`url: ${siteUrl}/${col}/${slug}`);
+      fullLines.push(`url: ${siteUrl}/${col}/${slug}/`);
       fullLines.push(`title: ${data.title || slug}`);
       fullLines.push(`description: ${data.description || ''}`);
       fullLines.push(`---`);

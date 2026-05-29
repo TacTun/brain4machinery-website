@@ -29,7 +29,20 @@ const {
 const siteUrl = 'https://brain4machinery.com';
 const rawPath = Astro.url.pathname;
 const normalizedPath = rawPath === '/' || rawPath.endsWith('/') ? rawPath : `${rawPath}/`;
-const canonicalUrl = canonical || new URL(normalizedPath, siteUrl).toString();
+
+// Always emit a trailing-slash canonical (site is trailingSlash:'always').
+// Normalize BOTH the auto-derived path AND any explicit `canonical` passed in
+// (e.g. from content frontmatter) so a no-slash canonical can't declare a URL
+// that 308-redirects — which Google flags as "Page with redirect".
+function toCanonical(value: string): string {
+  const u = new URL(value, siteUrl);
+  const last = u.pathname.split('/').pop() ?? '';
+  if (u.pathname !== '/' && !u.pathname.endsWith('/') && !last.includes('.')) {
+    u.pathname += '/';
+  }
+  return u.toString();
+}
+const canonicalUrl = toCanonical(canonical || normalizedPath);
 const ogImageUrl = new URL(ogImage, siteUrl).toString();
 
 const orgJsonLd = {

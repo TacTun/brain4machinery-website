@@ -38,7 +38,7 @@ faq:
 
 Specifying a service-robot control platform sounds simpler than it is. You need AI compute for perception — object detection, semantic mapping, depth estimation. You need deterministic real-time control for motors — servo loops closing at 500 Hz to 1 kHz, safety interlocks that cut power in hardware time. And you need both in a form factor that fits your enclosure, survives the operating environment, and holds a stable BOM for five years.
 
-The [NVIDIA Jetson](/platform) family handles the perception side well. A Jetson Orin NX 16 GB delivers 157 TOPS in a 25 W envelope — enough for concurrent object detection and stereo depth processing. But Linux scheduling jitter on Jetson, even with PREEMPT_RT enabled, runs 20–200 µs under well-controlled conditions, with tail latencies climbing higher under load. The Jetson RT kernel remains Developer Preview quality as of JetPack r36.5. For a corridor robot correcting wheel velocity at 200 Hz, that is fine. For a collaborative arm closing a force control loop at 1 kHz, it is not.
+The [NVIDIA Jetson](/platform/) family handles the perception side well. A Jetson Orin NX 16 GB delivers 157 TOPS in a 25 W envelope — enough for concurrent object detection and stereo depth processing. But Linux scheduling jitter on Jetson, even with PREEMPT_RT enabled, runs 20–200 µs under well-controlled conditions, with tail latencies climbing higher under load. The Jetson RT kernel remains Developer Preview quality as of JetPack r36.5. For a corridor robot correcting wheel velocity at 200 Hz, that is fine. For a collaborative arm closing a force control loop at 1 kHz, it is not.
 
 The PLC-grade platforms solve the real-time half. Beckhoff's TwinCAT 3 achieves EtherCAT cycle times as low as 50 µs with its XFC technology and can coordinate up to 256 axes from a single controller. Synapticon SOMANET Circulo runs its torque and current control loop at 16 kHz (firmware v4.2.0). But neither ships with on-device AI inference compute. If your robot needs both closed-loop force control and camera-based scene understanding, you're integrating two separate control planes, synchronizing them over a fieldbus, and hardening both for EMI — then supporting that combined BOM for the life of the product.
 
@@ -110,7 +110,7 @@ The result is sub-10 µs real-time latency alongside up to 275 TOPS of AI comput
 
 **Weaknesses:** Not a catalog item — production units take 3–5 months; higher per-unit cost than an off-the-shelf carrier at low volumes; requires a co-design engagement, not a datasheet order.
 
-**Best for:** OEMs running 50–1,000 units per year where integration cost over a five-year deployment exceeds the co-design timeline, and where sub-100 µs control loops or custom I/O are mandatory. This is the [AI-native controller](/glossary/ai-native-controller-primer) architecture applied to a production-grade control spine.
+**Best for:** OEMs running 50–1,000 units per year where integration cost over a five-year deployment exceeds the co-design timeline, and where sub-100 µs control loops or custom I/O are mandatory. This is the [AI-native controller](/glossary/ai-native-controller-primer/) architecture applied to a production-grade control spine.
 
 ---
 
@@ -223,15 +223,15 @@ PREEMPT_RT Linux handles latency requirements in the 20–200 µs range under we
 
 Any service-robot application that needs a control loop faster than 1 kHz, sub-100 µs hardware safety interlocks, or hard real-time force control cannot rely on a Jetson-only platform. The three platforms in this list that break the PREEMPT_RT ceiling — TACTUN, Beckhoff, and Synapticon — all route real-time logic through dedicated hardware: an FPGA fabric (TACTUN), TwinCAT running on bare-metal with EtherCAT at 50 µs (Beckhoff), or an FPGA servo drive with a 16 kHz current loop (Synapticon). FPGA-based hardware paths achieve sub-µs fault response — the "< 10 µs" threshold in the comparison table above is conservative.
 
-For a deeper look at how FPGA and Jetson architectures work together, the [FPGA + Jetson hybrid architecture guide](/guides/fpga-jetson-hybrid-architecture) covers the design trade-offs in detail.
+For a deeper look at how FPGA and Jetson architectures work together, the [FPGA + Jetson hybrid architecture guide](/guides/fpga-jetson-hybrid-architecture/) covers the design trade-offs in detail.
 
 ## What the TACTUN control spine does differently
 
-The other platforms in this list make a choice: perception compute or deterministic control. The [TACTUN platform](/platform) is co-designed to eliminate that choice for OEM programs with specific I/O, environmental, and real-time requirements.
+The other platforms in this list make a choice: perception compute or deterministic control. The [TACTUN platform](/platform/) is co-designed to eliminate that choice for OEM programs with specific I/O, environmental, and real-time requirements.
 
-A TACTUN board pairs a Jetson module — NX or AGX Orin, matched to the AI compute budget — with a custom FPGA block that handles motor drive timing, encoder feedback, and safety interlock logic at sub-10 µs latency on the same PCB, with no fieldbus boundary between the AI plane and the control plane. The founding team brings 14 years of systems integration experience and 800+ controllers shipped across industrial and robotics programs. The [co-design process](/platform#how-we-work) is defined: board architecture scoped in 5 business days, production prototypes in 3–5 months, $0 NRE.
+A TACTUN board pairs a Jetson module — NX or AGX Orin, matched to the AI compute budget — with a custom FPGA block that handles motor drive timing, encoder feedback, and safety interlock logic at sub-10 µs latency on the same PCB, with no fieldbus boundary between the AI plane and the control plane. The founding team brings 14 years of systems integration experience and 800+ controllers shipped across industrial and robotics programs. The [co-design process](/platform/#how-we-work) is defined: board architecture scoped in 5 business days, production prototypes in 3–5 months, $0 NRE.
 
-That structure matters for OEMs who need to hit a production gate without an open-ended engineering contract. For a cost-vs-build analysis across the five-year deployment horizon, see the [build-vs-buy robotics controller analysis](/blog/build-vs-buy-robotics-controller).
+That structure matters for OEMs who need to hit a production gate without an open-ended engineering contract. For a cost-vs-build analysis across the five-year deployment horizon, see the [build-vs-buy robotics controller analysis](/blog/build-vs-buy-robotics-controller/).
 
 ## Pick by vertical: a decision guide
 
@@ -253,7 +253,7 @@ flowchart TD
     G -->|Axis-level servo safety| J[Synapticon SOMANET Circulo]
 ```
 
-**Service-robotics vertical heuristics** — drawn from the [deployment use cases](/use-cases) the platforms above are most frequently specified for:
+**Service-robotics vertical heuristics** — drawn from the [deployment use cases](/use-cases/) the platforms above are most frequently specified for:
 
 - **Hospitality and delivery robots** → Jetson Orin NX platform (ConnectTech Boson-22 or ADLINK ROScube-X): cost-sensitive, perception-heavy, low motor count
 - **Inspection and security robots** → Stereolabs ZED Box or Orin AGX: vision-dominant, low real-time demand
@@ -279,4 +279,4 @@ Several platforms appear frequently in service-robotics conversations but are ex
 
 ---
 
-If your motor count, I/O map, or safety requirements are pushing your service-robot program toward custom hardware, [start a conversation with the TACTUN team](/contact). We scope board architectures in 5 business days and can tell you quickly whether a co-designed control spine or an off-the-shelf carrier is the right call for your program and volume.
+If your motor count, I/O map, or safety requirements are pushing your service-robot program toward custom hardware, [start a conversation with the TACTUN team](/contact/). We scope board architectures in 5 business days and can tell you quickly whether a co-designed control spine or an off-the-shelf carrier is the right call for your program and volume.

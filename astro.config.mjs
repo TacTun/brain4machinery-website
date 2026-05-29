@@ -2,6 +2,8 @@ import { defineConfig } from 'astro/config';
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 import rehypeMermaid from 'rehype-mermaid';
+import { readdirSync, readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 // rehype-mermaid with strategy:'inline-svg' renders ```mermaid blocks to
 // inline SVG at build time via a headless Chromium (Playwright). Zero runtime
@@ -18,6 +20,45 @@ const mermaidOptions = {
     theme: 'neutral', // theme-agnostic — works in both light + dark modes
   },
 };
+
+// --- Sitemap lastmod from real content dates -------------------------------
+// @astrojs/sitemap otherwise stamps every URL with the build time, which sends
+// search engines a noisy "everything changed" signal. We map each
+// /collection/slug/ to its frontmatter updatedDate||publishedDate, and fall
+// back to build time only for static pages that have no content date.
+const BUILD_TIME = new Date().toISOString();
+const contentRoot = fileURLToPath(new URL('./src/content', import.meta.url));
+
+function listDirs(p) {
+  try {
+    return readdirSync(p, { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name);
+  } catch {
+    return [];
+  }
+}
+function listContentFiles(p) {
+  try {
+    return readdirSync(p).filter((f) => /\.mdx?$/.test(f));
+  } catch {
+    return [];
+  }
+}
+
+const CONTENT_LASTMOD = new Map();
+for (const col of listDirs(contentRoot)) {
+  for (const file of listContentFiles(`${contentRoot}/${col}`)) {
+    const slug = file.replace(/\.mdx?$/, '');
+    const fm = readFileSync(`${contentRoot}/${col}/${file}`, 'utf8').match(/^---\n([\s\S]*?)\n---/);
+    if (!fm) continue;
+    const raw = (fm[1].match(/^updatedDate:\s*(.+)$/m) || fm[1].match(/^publishedDate:\s*(.+)$/m) || [])[1];
+    const d = raw ? new Date(raw.trim().replace(/^['"]|['"]$/g, '')) : null;
+    if (d && !Number.isNaN(d.getTime())) CONTENT_LASTMOD.set(`/${col}/${slug}/`, d.toISOString());
+  }
+}
+
+// The compare landing page is excluded from the sitemap while the collection
+// is empty (thin page). It auto-returns once a comparison is published.
+const COMPARE_EMPTY = listContentFiles(`${contentRoot}/compare`).length === 0;
 
 export default defineConfig({
   site: 'https://brain4machinery.com',
@@ -39,7 +80,16 @@ export default defineConfig({
     sitemap({
       changefreq: 'weekly',
       priority: 0.7,
-      lastmod: new Date(),
+      filter: (page) => !(COMPARE_EMPTY && page === 'https://brain4machinery.com/compare/'),
+      serialize(item) {
+        try {
+          const path = new URL(item.url).pathname;
+          item.lastmod = CONTENT_LASTMOD.get(path) || BUILD_TIME;
+        } catch {
+          item.lastmod = BUILD_TIME;
+        }
+        return item;
+      },
     }),
   ],
 });
