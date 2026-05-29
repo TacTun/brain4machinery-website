@@ -11,7 +11,7 @@ export async function GET(context) {
       title: entry.data.title,
       pubDate: entry.data.publishedDate,
       description: entry.data.description,
-      link: `/${entry.collection}/${entry.slug}`,
+      link: `/${entry.collection}/${entry.slug}/`,
       author: entry.data.author,
     }))
     .sort((a, b) => b.pubDate.getTime() - a.pubDate.getTime());

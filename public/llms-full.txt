@@ -1,9 +1,9 @@
 # TACTUN — brain4machinery.com — Full content snapshot
 
-Auto-generated. For citation by LLMs. Last regenerated: 2026-05-27T18:14:04.523Z
+Auto-generated. For citation by LLMs. Last regenerated: 2026-05-29T20:28:19.818Z
 
 ---
-url: https://brain4machinery.com/guides/custom-jetson-carrier-board-design
+url: https://brain4machinery.com/guides/custom-jetson-carrier-board-design/
 title: Custom Jetson carrier board design for robotics: a 2026 guide
 description: How to design or specify a custom NVIDIA Jetson carrier board for production robotics — module selection, power tree, thermal, EMC, connectors, and lifecycle.
 ---
@@ -33,13 +33,13 @@ The right Jetson Orin module is almost never the most capable one on the spec sh
 *TOPS figures: standard mode / JetPack 6.2 Super Mode. Temperature per NVIDIA product documentation and developer forum confirmations.*
 *† AGX Orin 64GB (commercial): power-mode range and minimum operating temperature not confirmed at publication. Verify against the current NVIDIA AGX Orin module datasheet before use in a design.*
 
-For most [NVIDIA Jetson](/platform)-based field-robotics programs, the decision collapses to three modules.
+For most [NVIDIA Jetson](/platform/)-based field-robotics programs, the decision collapses to three modules.
 
 **Orin Nano 8GB** fits single-camera guidance, basic depth perception, or any workload that runs comfortably at 40 TOPS and 25 W. JetPack 6.2's Super Mode raises available compute to 67 TOPS without a hardware swap, giving real headroom for model growth between production versions.
 
 **Orin NX 16GB** is the practical ceiling for a sealed industrial enclosure. At 100 TOPS standard (157 TOPS Super Mode) with high-bandwidth LPDDR5 memory, it handles multi-camera perception and vision-language model inference without hitting memory bandwidth as the first bottleneck. The 40 W extended mode, added in JetPack 6.2, is available when the thermal design can handle it — a constraint that tightens in a sealed IP67 housing on a hot summer day.
 
-**AGX Orin Industrial** enters only when two requirements collide: more than 157 TOPS *and* a confirmed −40 °C operational minimum. NVIDIA engineering has confirmed that the commercial Orin NX module's minimum operational temperature is −25 °C. Programs targeting −40 °C ambient — certain [agricultural robotics](/use-cases#agriculture) deployments and hard-rock mining applications — require the AGX Orin Industrial, a separate product family with a different PCB footprint and a lifecycle that extends to July 2033.
+**AGX Orin Industrial** enters only when two requirements collide: more than 157 TOPS *and* a confirmed −40 °C operational minimum. NVIDIA engineering has confirmed that the commercial Orin NX module's minimum operational temperature is −25 °C. Programs targeting −40 °C ambient — certain [agricultural robotics](/use-cases/#agriculture) deployments and hard-rock mining applications — require the AGX Orin Industrial, a separate product family with a different PCB footprint and a lifecycle that extends to July 2033.
 
 Budget compute headroom deliberately. Models grow with every OTA update, and a module running at the edge of its TOPS budget on shipping day will throttle within 18 months of software updates.
 
@@ -110,7 +110,7 @@ The Orin NX 16GB ships with 2× CAN FD, 3× USB 3.2, multiple MIPI CSI-2 camera 
 
 For motor control, it does not. Closing a servo current loop at 1 kHz from Linux requires a deterministic SPI transaction on every cycle with no missed deadlines — a guarantee Linux scheduling cannot provide. Publishing EtherCAT packets with cycle times ≤ 100 µs and jitter well below 1 µs requires an FPGA-based Fieldbus Memory Management Unit; standard Linux Ethernet drivers cannot approach that timing. Implementing ISO 13849-1 PLd or PLe safety interlocks — emergency-stop inputs, light-curtain channels, gate-driver enables — requires hardware timing that Linux cannot bound to PFHd < 10⁻⁶ per hour (PLd) or < 10⁻⁷ per hour (PLe).
 
-These are the conditions that justify adding an FPGA co-processor to the same carrier board. The [FPGA real-time control](/platform#capabilities) layer owns the motor PWM outputs, encoder interfaces, EtherCAT slave stack, and safety I/O. The Jetson handles perception, planning, and setpoint generation over a PCIe or SPI bridge on the same PCB. The result is an [AI-native controller architecture](/glossary/ai-native-controller-primer) where deterministic hardware timing and AI inference share a single production board. The [FPGA + Jetson hybrid architecture guide](/guides/fpga-jetson-hybrid-architecture) covers interconnect selection, FPGA family trade-offs, and the full safety partitioning pattern in detail.
+These are the conditions that justify adding an FPGA co-processor to the same carrier board. The [FPGA real-time control](/platform/#capabilities) layer owns the motor PWM outputs, encoder interfaces, EtherCAT slave stack, and safety I/O. The Jetson handles perception, planning, and setpoint generation over a PCIe or SPI bridge on the same PCB. The result is an [AI-native controller architecture](/glossary/ai-native-controller-primer/) where deterministic hardware timing and AI inference share a single production board. The [FPGA + Jetson hybrid architecture guide](/guides/fpga-jetson-hybrid-architecture/) covers interconnect selection, FPGA family trade-offs, and the full safety partitioning pattern in detail.
 
 ## EMC and EMI: the ground-plane reality
 
@@ -144,16 +144,16 @@ The co-development alternative compresses that timeline. A qualified partner del
 
 ## What TACTUN does
 
-TACTUN designs the control spine for robotics programs across [use cases](/use-cases) from construction automation to underwater inspection — wherever the machine runs on a battery bus in a demanding environment. The carrier board pairs a custom FPGA architecture for deterministic real-time control with Jetson edge AI compute, configured to your motor mix (servo, stepper, hydraulic, pneumatic), your voltage bus, and your connector standard. The customer owns the AI stack and the application logic; TACTUN owns the spine underneath.
+TACTUN designs the control spine for robotics programs across [use cases](/use-cases/) from construction automation to underwater inspection — wherever the machine runs on a battery bus in a demanding environment. The carrier board pairs a custom FPGA architecture for deterministic real-time control with Jetson edge AI compute, configured to your motor mix (servo, stepper, hydraulic, pneumatic), your voltage bus, and your connector standard. The customer owns the AI stack and the application logic; TACTUN owns the spine underneath.
 
-The Jetson robotics board is prototype-ready, with production units expected to ship within 2–3 months. The founding team brings 14 years of systems-integration experience across industrial and field-robotics programs, plus 2 USPTO-granted patents and current NVIDIA Inception Program membership. Details on the engagement structure are on the [how we work](/platform#how-we-work) page: board architecture in 5 business days, physical prototypes in 3–5 months, $0 NRE — the customer pays only for production hardware.
-
----
-
-If the design axes above — module selection, power tree, thermal, connectors, EMC, and lifecycle planning — look right for your machine, [contact us](/contact) with the actuator list, the battery voltage, and the certification targets. We will tell you whether the spine we already build maps to your program.
+The Jetson robotics board is prototype-ready, with production units expected to ship within 2–3 months. The founding team brings 14 years of systems-integration experience across industrial and field-robotics programs, plus 2 USPTO-granted patents and current NVIDIA Inception Program membership. Details on the engagement structure are on the [how we work](/platform/#how-we-work) page: board architecture in 5 business days, physical prototypes in 3–5 months, $0 NRE — the customer pays only for production hardware.
 
 ---
-url: https://brain4machinery.com/guides/fpga-jetson-hybrid-architecture
+
+If the design axes above — module selection, power tree, thermal, connectors, EMC, and lifecycle planning — look right for your machine, [contact us](/contact/) with the actuator list, the battery voltage, and the certification targets. We will tell you whether the spine we already build maps to your program.
+
+---
+url: https://brain4machinery.com/guides/fpga-jetson-hybrid-architecture/
 title: FPGA + NVIDIA Jetson: hybrid control board for field robots
 description: A 2026 architecture guide for pairing FPGA real-time control with NVIDIA Jetson edge AI on one PCB — interconnects, safety, BOM trade-offs.
 ---
@@ -175,11 +175,11 @@ This guide walks each one with the parts, the standards, and the trade-offs that
 
 The architecture is conceptually simple. An FPGA — typically a Lattice ECP5, Lattice CrossLink-NX, AMD/Xilinx Artix-7, or AMD/Xilinx Spartan-7 — handles every signal that has a hard deadline. That includes three-phase PWM for BLDC servos, quadrature encoder decoding, current-shunt ADC sampling, EtherCAT slave logic, watchdog timers, and the safety-related interlocks that hold up ISO 13849-1 PL-d or PL-e claims.
 
-A [Jetson Orin](/platform) module — Nano, NX, or AGX — handles everything else. ROS 2 nodes for perception and planning, CUDA kernels for inference, the Model Context Protocol stack if the robot exposes an LLM-facing tool surface, OTA firmware delivery, telemetry, and the operator HMI.
+A [Jetson Orin](/platform/) module — Nano, NX, or AGX — handles everything else. ROS 2 nodes for perception and planning, CUDA kernels for inference, the Model Context Protocol stack if the robot exposes an LLM-facing tool surface, OTA firmware delivery, telemetry, and the operator HMI.
 
 Between them sits an interconnect — PCIe, SPI, UART, or memory-mapped DMA over a soft bridge — that does only two jobs. It carries setpoints down (target velocity, target position, behavior-tree state) and state up (measured current, encoder counts, fault flags). Everything else lives in one domain or the other, and the discipline of keeping it that way is what makes the architecture trustworthy.
 
-This is the [FPGA real-time control](/platform#capabilities) and Jetson edge AI split that defines every credible field-robotics carrier board on the market in 2026.
+This is the [FPGA real-time control](/platform/#capabilities) and Jetson edge AI split that defines every credible field-robotics carrier board on the market in 2026.
 
 ## FPGA family selection
 
@@ -212,7 +212,7 @@ Two non-obvious points decide the module choice in practice.
 
 First, **memory bandwidth dominates inference latency** for the depth, segmentation, and VLM models real field robots run. A 67-TOPS Orin Nano 8GB with 102 GB/s often outpaces the 34-TOPS Nano 4GB by more than the TOPS ratio suggests, because the model is bandwidth-bound, not compute-bound. NVIDIA's late-2024 software update raised the Nano 8GB from 40 to 67 TOPS and bandwidth from 68 to 102 GB/s without a hardware change.
 
-Second, **the power envelope sets the thermal design, not the average inference load**. A Jetson AGX at 60 W in a sealed IP-rated enclosure can outpace the heat path through the housing on a 40 °C day in a vineyard, so the right module for [agricultural robotics](/use-cases#agriculture) is often the Orin NX 16GB at 157 TOPS, not the AGX, even when the AGX would fit the workload on a bench.
+Second, **the power envelope sets the thermal design, not the average inference load**. A Jetson AGX at 60 W in a sealed IP-rated enclosure can outpace the heat path through the housing on a 40 °C day in a vineyard, so the right module for [agricultural robotics](/use-cases/#agriculture) is often the Orin NX 16GB at 157 TOPS, not the AGX, even when the AGX would fit the workload on a bench.
 
 ## Interconnect: PCIe, SPI, or UART
 
@@ -253,7 +253,7 @@ A working field-robotics carrier handles two real-time networking tasks at once.
 
 On the Jetson side, ROS 2 talks to the FPGA via ethercat_driver_ros2, the ICube-Robotics hardware interface for ros2_control built on the IgH EtherCAT Master for Linux. A PREEMPT_RT kernel gives the master node a predictable enough scheduling environment to drive 1 kHz cycles, and PTP synchronizes the EtherCAT distributed-clock timestamps with the Jetson's ROS 2 clock. A perception event at frame N+1 then lines up against motor state at the same wall-clock instant.
 
-This is the [construction and mining](/use-cases#construction) story in particular: a 1 kHz hydraulic control cycle on the FPGA, a 30 Hz perception loop on the Jetson, and a sub-millisecond shared time base so the planner can issue a setpoint that the FPGA actually executes on the next motor cycle.
+This is the [construction and mining](/use-cases/#construction) story in particular: a 1 kHz hydraulic control cycle on the FPGA, a 30 Hz perception loop on the Jetson, and a sub-millisecond shared time base so the planner can issue a setpoint that the FPGA actually executes on the next motor cycle.
 
 ## The pitfalls
 
@@ -281,15 +281,15 @@ Standing up a custom carrier in-house carries its own cost. Building comparable 
 
 TACTUN designs the control spine for field robotics — the FPGA + Jetson carrier board, the motor-control stages, the safety logic, and the application-builder software that runs on top. The spine pairs a custom FPGA architecture for deterministic real-time control with NVIDIA Jetson edge AI compute, configured against the customer's specific sensors, actuators, and motor mix (servo, stepper, hydraulic, pneumatic). The customer keeps full ownership of the AI stack; TACTUN owns the spine underneath it.
 
-The engagement is built to remove the in-house tax. Board architecture is designed in 5 business days. Prototypes ship in 3–5 months on standard contract manufacturing. The customer pays $0 NRE and pays only for production hardware. A 14-year systems-integration record on the founding team, plus current NVIDIA Inception Program membership, is what makes that schedule realistic. The [TACTUN platform](/platform) handles the FPGA, the Jetson integration, the motor-control silicon, and the safety partitioning, so the customer team stays focused on the autonomy stack.
+The engagement is built to remove the in-house tax. Board architecture is designed in 5 business days. Prototypes ship in 3–5 months on standard contract manufacturing. The customer pays $0 NRE and pays only for production hardware. A 14-year systems-integration record on the founding team, plus current NVIDIA Inception Program membership, is what makes that schedule realistic. The [TACTUN platform](/platform/) handles the FPGA, the Jetson integration, the motor-control silicon, and the safety partitioning, so the customer team stays focused on the autonomy stack.
 
 ## Talk to us
 
-If you are standing up a field-robotics product and the FPGA + Jetson architecture above looks like the right shape — but you would rather not absorb 18–24 months of carrier-board development to get there — [contact us](/contact). We will look at the actuator list, the sensor mix, and the safety envelope, and tell you whether the spine we already build maps to your machine.
+If you are standing up a field-robotics product and the FPGA + Jetson architecture above looks like the right shape — but you would rather not absorb 18–24 months of carrier-board development to get there — [contact us](/contact/). We will look at the actuator list, the sensor mix, and the safety envelope, and tell you whether the spine we already build maps to your machine.
 
 ---
-url: https://brain4machinery.com/guides/top-10-hardware-brains-for-service-robotics
-title: Top 10 hardware brains for service robotics (2026): an engineer's ranking
+url: https://brain4machinery.com/guides/top-10-hardware-brains-for-service-robotics/
+title: Top 10 hardware brains for service robotics (2026 ranking)
 description: Engineer-honest ranking of 10 hardware brains for service robotics in 2026. Real specs, named weaknesses, and deployment guidance by vertical.
 ---
 
@@ -297,18 +297,24 @@ description: Engineer-honest ranking of 10 hardware brains for service robotics 
 
 Specifying a service-robot control platform sounds simpler than it is. You need AI compute for perception — object detection, semantic mapping, depth estimation. You need deterministic real-time control for motors — servo loops closing at 500 Hz to 1 kHz, safety interlocks that cut power in hardware time. And you need both in a form factor that fits your enclosure, survives the operating environment, and holds a stable BOM for five years.
 
-The [NVIDIA Jetson](/platform) family handles the perception side well. A Jetson Orin NX 16 GB delivers 157 TOPS in a 25 W envelope — enough for concurrent object detection and stereo depth processing. But Linux scheduling jitter on Jetson, even with PREEMPT_RT enabled, runs 20–200 µs under well-controlled conditions, with tail latencies climbing higher under load. The Jetson RT kernel remains Developer Preview quality as of JetPack r36.5. For a corridor robot correcting wheel velocity at 200 Hz, that is fine. For a collaborative arm closing a force control loop at 1 kHz, it is not.
+The [NVIDIA Jetson](/platform/) family handles the perception side well. A Jetson Orin NX 16 GB delivers 157 TOPS in a 25 W envelope — enough for concurrent object detection and stereo depth processing. But Linux scheduling jitter on Jetson, even with PREEMPT_RT enabled, runs 20–200 µs under well-controlled conditions, with tail latencies climbing higher under load. The Jetson RT kernel remains Developer Preview quality as of JetPack r36.5. For a corridor robot correcting wheel velocity at 200 Hz, that is fine. For a collaborative arm closing a force control loop at 1 kHz, it is not.
 
 The PLC-grade platforms solve the real-time half. Beckhoff's TwinCAT 3 achieves EtherCAT cycle times as low as 50 µs with its XFC technology and can coordinate up to 256 axes from a single controller. Synapticon SOMANET Circulo runs its torque and current control loop at 16 kHz (firmware v4.2.0). But neither ships with on-device AI inference compute. If your robot needs both closed-loop force control and camera-based scene understanding, you're integrating two separate control planes, synchronizing them over a fieldbus, and hardening both for EMI — then supporting that combined BOM for the life of the product.
 
 That integration cost is the real problem. Most programs underestimate it by 12–18 months. Building an equivalent AI-plus-real-time-control platform from scratch typically costs $900K–$2M+ and 18–24 months of engineering time. The platforms in this list represent the alternatives — each with a different trade-off between AI headroom, determinism, and integration burden.
 
-<figure>
-  <img src="/assets/posts/top-10-hardware-brains-for-service-robotics/service-robot-control-architecture.png"
-       alt="Block diagram comparing a Jetson-only architecture (perception only, no real-time motor control) versus a Jetson-plus-FPGA co-designed architecture (perception and deterministic control on one PCB), illustrating the integration gap each approach leaves open." />
-  <figcaption>The control architecture gap: perception-only Jetson carriers versus a co-designed AI-plus-real-time spine.</figcaption>
-</figure>
-{/* image_brief: Line-drawing / technical diagram with two side-by-side block diagrams. Left block: Jetson module → carrier board → "fieldbus →" separate motor controller; shows the integration boundary as a dashed line. Right block: Jetson module + FPGA on one PCB, shared power rail, direct motor I/O lines. Clean monochrome style consistent with technical datasheets. Commission from a technical illustrator or generate via DALL-E with prompt: "Two-panel engineering block diagram, white background, monochrome, technical line-drawing style: left panel labeled 'Jetson carrier + separate motor controller' showing two boxes connected by a fieldbus dashed line; right panel labeled 'Co-designed AI + FPGA spine' showing one unified box with motor drive outputs." */}
+```mermaid
+flowchart LR
+    subgraph S1["Jetson-only carrier (perception only)"]
+        A1["Jetson module — AI perception"] -->|"fieldbus: integration gap"| A2["Separate motor controller"]
+    end
+    subgraph S2["Co-designed AI + real-time spine (one PCB)"]
+        B1["Jetson module — AI perception"] --> B2["FPGA — deterministic control"]
+        B2 -->|"direct motor I/O"| B3["Drives + motors"]
+    end
+```
+
+*The control architecture gap: a perception-only Jetson carrier leaves an integration boundary at the fieldbus, while a co-designed AI-plus-real-time spine puts perception and deterministic control on one PCB.*
 
 ## Eight criteria, ranked and declared up-front
 
@@ -363,7 +369,7 @@ The result is sub-10 µs real-time latency alongside up to 275 TOPS of AI comput
 
 **Weaknesses:** Not a catalog item — production units take 3–5 months; higher per-unit cost than an off-the-shelf carrier at low volumes; requires a co-design engagement, not a datasheet order.
 
-**Best for:** OEMs running 50–1,000 units per year where integration cost over a five-year deployment exceeds the co-design timeline, and where sub-100 µs control loops or custom I/O are mandatory. This is the [AI-native controller](/glossary/ai-native-controller-primer) architecture applied to a production-grade control spine.
+**Best for:** OEMs running 50–1,000 units per year where integration cost over a five-year deployment exceeds the co-design timeline, and where sub-100 µs control loops or custom I/O are mandatory. This is the [AI-native controller](/glossary/ai-native-controller-primer/) architecture applied to a production-grade control spine.
 
 ---
 
@@ -476,15 +482,15 @@ PREEMPT_RT Linux handles latency requirements in the 20–200 µs range under we
 
 Any service-robot application that needs a control loop faster than 1 kHz, sub-100 µs hardware safety interlocks, or hard real-time force control cannot rely on a Jetson-only platform. The three platforms in this list that break the PREEMPT_RT ceiling — TACTUN, Beckhoff, and Synapticon — all route real-time logic through dedicated hardware: an FPGA fabric (TACTUN), TwinCAT running on bare-metal with EtherCAT at 50 µs (Beckhoff), or an FPGA servo drive with a 16 kHz current loop (Synapticon). FPGA-based hardware paths achieve sub-µs fault response — the "< 10 µs" threshold in the comparison table above is conservative.
 
-For a deeper look at how FPGA and Jetson architectures work together, the [FPGA + Jetson hybrid architecture guide](/guides/fpga-jetson-hybrid-architecture) covers the design trade-offs in detail.
+For a deeper look at how FPGA and Jetson architectures work together, the [FPGA + Jetson hybrid architecture guide](/guides/fpga-jetson-hybrid-architecture/) covers the design trade-offs in detail.
 
 ## What the TACTUN control spine does differently
 
-The other platforms in this list make a choice: perception compute or deterministic control. The [TACTUN platform](/platform) is co-designed to eliminate that choice for OEM programs with specific I/O, environmental, and real-time requirements.
+The other platforms in this list make a choice: perception compute or deterministic control. The [TACTUN platform](/platform/) is co-designed to eliminate that choice for OEM programs with specific I/O, environmental, and real-time requirements.
 
-A TACTUN board pairs a Jetson module — NX or AGX Orin, matched to the AI compute budget — with a custom FPGA block that handles motor drive timing, encoder feedback, and safety interlock logic at sub-10 µs latency on the same PCB, with no fieldbus boundary between the AI plane and the control plane. The founding team brings 14 years of systems integration experience and 800+ controllers shipped across industrial and robotics programs. The [co-design process](/platform#how-we-work) is defined: board architecture scoped in 5 business days, production prototypes in 3–5 months, $0 NRE.
+A TACTUN board pairs a Jetson module — NX or AGX Orin, matched to the AI compute budget — with a custom FPGA block that handles motor drive timing, encoder feedback, and safety interlock logic at sub-10 µs latency on the same PCB, with no fieldbus boundary between the AI plane and the control plane. The founding team brings 14 years of systems integration experience and 800+ controllers shipped across industrial and robotics programs. The [co-design process](/platform/#how-we-work) is defined: board architecture scoped in 5 business days, production prototypes in 3–5 months, $0 NRE.
 
-That structure matters for OEMs who need to hit a production gate without an open-ended engineering contract. For a cost-vs-build analysis across the five-year deployment horizon, see the [build-vs-buy robotics controller analysis](/blog/build-vs-buy-robotics-controller).
+That structure matters for OEMs who need to hit a production gate without an open-ended engineering contract. For a cost-vs-build analysis across the five-year deployment horizon, see the [build-vs-buy robotics controller analysis](/blog/build-vs-buy-robotics-controller/).
 
 ## Pick by vertical: a decision guide
 
@@ -506,7 +512,7 @@ flowchart TD
     G -->|Axis-level servo safety| J[Synapticon SOMANET Circulo]
 ```
 
-**Service-robotics vertical heuristics** — drawn from the [deployment use cases](/use-cases) the platforms above are most frequently specified for:
+**Service-robotics vertical heuristics** — drawn from the [deployment use cases](/use-cases/) the platforms above are most frequently specified for:
 
 - **Hospitality and delivery robots** → Jetson Orin NX platform (ConnectTech Boson-22 or ADLINK ROScube-X): cost-sensitive, perception-heavy, low motor count
 - **Inspection and security robots** → Stereolabs ZED Box or Orin AGX: vision-dominant, low real-time demand
@@ -532,10 +538,10 @@ Several platforms appear frequently in service-robotics conversations but are ex
 
 ---
 
-If your motor count, I/O map, or safety requirements are pushing your service-robot program toward custom hardware, [start a conversation with the TACTUN team](/contact). We scope board architectures in 5 business days and can tell you quickly whether a co-designed control spine or an off-the-shelf carrier is the right call for your program and volume.
+If your motor count, I/O map, or safety requirements are pushing your service-robot program toward custom hardware, [start a conversation with the TACTUN team](/contact/). We scope board architectures in 5 business days and can tell you quickly whether a co-designed control spine or an off-the-shelf carrier is the right call for your program and volume.
 
 ---
-url: https://brain4machinery.com/glossary/ai-native-controller-primer
+url: https://brain4machinery.com/glossary/ai-native-controller-primer/
 title: What is an AI-native controller? A 2026 primer for robotics teams
 description: Definition and architecture of AI-native controllers: FPGA real-time control paired with Jetson edge AI on one board, for autonomous machines.
 ---
@@ -606,13 +612,13 @@ Meeting only condition 1: a Jetson dev kit or industrial PC may suffice. Meeting
 
 ## How TACTUN designs AI-native controllers
 
-TACTUN designs the control spine — the [FPGA real-time control](/platform#capabilities) and Jetson AI layer that lets a customer's own perception and planning models command the machine without owning the board design. The [TACTUN platform](/platform) combines custom FPGA logic with NVIDIA Jetson edge AI on a single carrier board, with I/O tailored to each customer's specific sensors and actuators. Motor control covers servo, stepper, hydraulic, and pneumatic actuators. Safety logic and machine-state management execute on the FPGA side, keeping the Jetson's AI stack off the path to the machine's safety boundary.
+TACTUN designs the control spine — the [FPGA real-time control](/platform/#capabilities) and Jetson AI layer that lets a customer's own perception and planning models command the machine without owning the board design. The [TACTUN platform](/platform/) combines custom FPGA logic with NVIDIA Jetson edge AI on a single carrier board, with I/O tailored to each customer's specific sensors and actuators. Motor control covers servo, stepper, hydraulic, and pneumatic actuators. Safety logic and machine-state management execute on the FPGA side, keeping the Jetson's AI stack off the path to the machine's safety boundary.
 
-[TACTUN's founding engineers](/about) have shipped more than 800 controllers across prior companies and bring 14 years of systems-integration experience to each engagement. TACTUN delivers board architecture in 5 business days at $0 NRE — customers pay for production hardware, not the design session. Physical prototypes reach the customer's test bench in 3–5 months.
+[TACTUN's founding engineers](/about/) have shipped more than 800 controllers across prior companies and bring 14 years of systems-integration experience to each engagement. TACTUN delivers board architecture in 5 business days at $0 NRE — customers pay for production hardware, not the design session. Physical prototypes reach the customer's test bench in 3–5 months.
 
-Building an AI-native controller from scratch typically costs $900K–$2M+ and takes 18–24 months once board design, firmware, safety logic, prototyping, and production qualification are accounted for. Engaging a team that has already resolved the FPGA-to-Jetson interface, the I/O selection, and the production supply chain — across [use cases](/use-cases) spanning agricultural, construction, marine, and medical robotics — shortens both figures. TACTUN is an NVIDIA Inception Program member.
+Building an AI-native controller from scratch typically costs $900K–$2M+ and takes 18–24 months once board design, firmware, safety logic, prototyping, and production qualification are accounted for. Engaging a team that has already resolved the FPGA-to-Jetson interface, the I/O selection, and the production supply chain — across [use cases](/use-cases/) spanning agricultural, construction, marine, and medical robotics — shortens both figures. TACTUN is an NVIDIA Inception Program member.
 
 ---
 
-Talk to us about your machine — describe the control loop timing, the inference workload, and the operating environment, and we will return a board architecture in 5 business days. [Start a conversation →](/contact)
+Talk to us about your machine — describe the control loop timing, the inference workload, and the operating environment, and we will return a board architecture in 5 business days. [Start a conversation →](/contact/)
 

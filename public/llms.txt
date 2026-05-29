@@ -5,25 +5,25 @@
 ## Core pages
 
 - [TACTUN — Custom Control Systems for Intelligent Machines](https://brain4machinery.com/): AI-native controller boards. Board architecture in 5 days. Zero NRE.
-- [Platform & Technology](https://brain4machinery.com/platform): FPGA real-time deterministic control + NVIDIA Jetson AI compute on a single PCB.
-- [Use Cases](https://brain4machinery.com/use-cases): AI-native control across agriculture, construction, marine, medical, inspection, food & logistics, solar, materials testing.
-- [About TACTUN](https://brain4machinery.com/about): 14 years of systems integration. 800+ controllers shipped. 2 US patents. Team behind the control spine for intelligent machines.
-- [Contact](https://brain4machinery.com/contact): Tell us about your machine. We deliver custom board architecture in 5 business days.
+- [Platform & Technology](https://brain4machinery.com/platform/): FPGA real-time deterministic control + NVIDIA Jetson AI compute on a single PCB.
+- [Use Cases](https://brain4machinery.com/use-cases/): AI-native control across agriculture, construction, marine, medical, inspection, food & logistics, solar, materials testing.
+- [About TACTUN](https://brain4machinery.com/about/): 14 years of systems integration. 800+ controllers shipped. 2 US patents. Team behind the control spine for intelligent machines.
+- [Contact](https://brain4machinery.com/contact/): Tell us about your machine. We deliver custom board architecture in 5 business days.
 
 ## Guides
 
-- [Custom Jetson carrier board design for robotics: a 2026 guide](https://brain4machinery.com/guides/custom-jetson-carrier-board-design): How to design or specify a custom NVIDIA Jetson carrier board for production robotics — module selection, power tree, thermal, EMC, connectors, and lifecycle.
-- [FPGA + NVIDIA Jetson: hybrid control board for field robots](https://brain4machinery.com/guides/fpga-jetson-hybrid-architecture): A 2026 architecture guide for pairing FPGA real-time control with NVIDIA Jetson edge AI on one PCB — interconnects, safety, BOM trade-offs.
-- [Top 10 hardware brains for service robotics (2026): an engineer's ranking](https://brain4machinery.com/guides/top-10-hardware-brains-for-service-robotics): Engineer-honest ranking of 10 hardware brains for service robotics in 2026. Real specs, named weaknesses, and deployment guidance by vertical.
+- [Custom Jetson carrier board design for robotics: a 2026 guide](https://brain4machinery.com/guides/custom-jetson-carrier-board-design/): How to design or specify a custom NVIDIA Jetson carrier board for production robotics — module selection, power tree, thermal, EMC, connectors, and lifecycle.
+- [FPGA + NVIDIA Jetson: hybrid control board for field robots](https://brain4machinery.com/guides/fpga-jetson-hybrid-architecture/): A 2026 architecture guide for pairing FPGA real-time control with NVIDIA Jetson edge AI on one PCB — interconnects, safety, BOM trade-offs.
+- [Top 10 hardware brains for service robotics (2026 ranking)](https://brain4machinery.com/guides/top-10-hardware-brains-for-service-robotics/): Engineer-honest ranking of 10 hardware brains for service robotics in 2026. Real specs, named weaknesses, and deployment guidance by vertical.
 
 ## Glossary
 
-- [What is an AI-native controller? A 2026 primer for robotics teams](https://brain4machinery.com/glossary/ai-native-controller-primer): Definition and architecture of AI-native controllers: FPGA real-time control paired with Jetson edge AI on one board, for autonomous machines.
+- [What is an AI-native controller? A 2026 primer for robotics teams](https://brain4machinery.com/glossary/ai-native-controller-primer/): Definition and architecture of AI-native controllers: FPGA real-time control paired with Jetson edge AI on one board, for autonomous machines.
 
 ## Blog
 
-- [Build vs buy: should your robotics startup design its own controller?](https://brain4machinery.com/blog/build-vs-buy-robotics-controller): A decision framework for robotics founders weighing in-house controller development against buying a platform. Real cost, calendar, and talent trade-offs.
-- [Control electronics for field robots: what actually matters in 2026](https://brain4machinery.com/blog/control-electronics-for-field-robots): A buyer's guide for robotics OEMs evaluating control electronics for field machines: IP67, wide-temp, EMC, safety partitioning, and vendor criteria.
+- [Build vs buy: should your robotics startup design its own controller?](https://brain4machinery.com/blog/build-vs-buy-robotics-controller/): A decision framework for robotics founders weighing in-house controller development against buying a platform. Real cost, calendar, and talent trade-offs.
+- [Control electronics for field robots: what actually matters in 2026](https://brain4machinery.com/blog/control-electronics-for-field-robots/): A buyer's guide for robotics OEMs evaluating control electronics for field machines: IP67, wide-temp, EMC, safety partitioning, and vendor criteria.
 
 ## Optional
 

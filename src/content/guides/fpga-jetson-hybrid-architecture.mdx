@@ -51,11 +51,11 @@ This guide walks each one with the parts, the standards, and the trade-offs that
 
 The architecture is conceptually simple. An FPGA — typically a Lattice ECP5, Lattice CrossLink-NX, AMD/Xilinx Artix-7, or AMD/Xilinx Spartan-7 — handles every signal that has a hard deadline. That includes three-phase PWM for BLDC servos, quadrature encoder decoding, current-shunt ADC sampling, EtherCAT slave logic, watchdog timers, and the safety-related interlocks that hold up ISO 13849-1 PL-d or PL-e claims.
 
-A [Jetson Orin](/platform) module — Nano, NX, or AGX — handles everything else. ROS 2 nodes for perception and planning, CUDA kernels for inference, the Model Context Protocol stack if the robot exposes an LLM-facing tool surface, OTA firmware delivery, telemetry, and the operator HMI.
+A [Jetson Orin](/platform/) module — Nano, NX, or AGX — handles everything else. ROS 2 nodes for perception and planning, CUDA kernels for inference, the Model Context Protocol stack if the robot exposes an LLM-facing tool surface, OTA firmware delivery, telemetry, and the operator HMI.
 
 Between them sits an interconnect — PCIe, SPI, UART, or memory-mapped DMA over a soft bridge — that does only two jobs. It carries setpoints down (target velocity, target position, behavior-tree state) and state up (measured current, encoder counts, fault flags). Everything else lives in one domain or the other, and the discipline of keeping it that way is what makes the architecture trustworthy.
 
-This is the [FPGA real-time control](/platform#capabilities) and Jetson edge AI split that defines every credible field-robotics carrier board on the market in 2026.
+This is the [FPGA real-time control](/platform/#capabilities) and Jetson edge AI split that defines every credible field-robotics carrier board on the market in 2026.
 
 ## FPGA family selection
 
@@ -88,7 +88,7 @@ Two non-obvious points decide the module choice in practice.
 
 First, **memory bandwidth dominates inference latency** for the depth, segmentation, and VLM models real field robots run. A 67-TOPS Orin Nano 8GB with 102 GB/s often outpaces the 34-TOPS Nano 4GB by more than the TOPS ratio suggests, because the model is bandwidth-bound, not compute-bound. NVIDIA's late-2024 software update raised the Nano 8GB from 40 to 67 TOPS and bandwidth from 68 to 102 GB/s without a hardware change.
 
-Second, **the power envelope sets the thermal design, not the average inference load**. A Jetson AGX at 60 W in a sealed IP-rated enclosure can outpace the heat path through the housing on a 40 °C day in a vineyard, so the right module for [agricultural robotics](/use-cases#agriculture) is often the Orin NX 16GB at 157 TOPS, not the AGX, even when the AGX would fit the workload on a bench.
+Second, **the power envelope sets the thermal design, not the average inference load**. A Jetson AGX at 60 W in a sealed IP-rated enclosure can outpace the heat path through the housing on a 40 °C day in a vineyard, so the right module for [agricultural robotics](/use-cases/#agriculture) is often the Orin NX 16GB at 157 TOPS, not the AGX, even when the AGX would fit the workload on a bench.
 
 ## Interconnect: PCIe, SPI, or UART
 
@@ -129,7 +129,7 @@ A working field-robotics carrier handles two real-time networking tasks at once.
 
 On the Jetson side, ROS 2 talks to the FPGA via ethercat_driver_ros2, the ICube-Robotics hardware interface for ros2_control built on the IgH EtherCAT Master for Linux. A PREEMPT_RT kernel gives the master node a predictable enough scheduling environment to drive 1 kHz cycles, and PTP synchronizes the EtherCAT distributed-clock timestamps with the Jetson's ROS 2 clock. A perception event at frame N+1 then lines up against motor state at the same wall-clock instant.
 
-This is the [construction and mining](/use-cases#construction) story in particular: a 1 kHz hydraulic control cycle on the FPGA, a 30 Hz perception loop on the Jetson, and a sub-millisecond shared time base so the planner can issue a setpoint that the FPGA actually executes on the next motor cycle.
+This is the [construction and mining](/use-cases/#construction) story in particular: a 1 kHz hydraulic control cycle on the FPGA, a 30 Hz perception loop on the Jetson, and a sub-millisecond shared time base so the planner can issue a setpoint that the FPGA actually executes on the next motor cycle.
 
 ## The pitfalls
 
@@ -157,8 +157,8 @@ Standing up a custom carrier in-house carries its own cost. Building comparable 
 
 TACTUN designs the control spine for field robotics — the FPGA + Jetson carrier board, the motor-control stages, the safety logic, and the application-builder software that runs on top. The spine pairs a custom FPGA architecture for deterministic real-time control with NVIDIA Jetson edge AI compute, configured against the customer's specific sensors, actuators, and motor mix (servo, stepper, hydraulic, pneumatic). The customer keeps full ownership of the AI stack; TACTUN owns the spine underneath it.
 
-The engagement is built to remove the in-house tax. Board architecture is designed in 5 business days. Prototypes ship in 3–5 months on standard contract manufacturing. The customer pays $0 NRE and pays only for production hardware. A 14-year systems-integration record on the founding team, plus current NVIDIA Inception Program membership, is what makes that schedule realistic. The [TACTUN platform](/platform) handles the FPGA, the Jetson integration, the motor-control silicon, and the safety partitioning, so the customer team stays focused on the autonomy stack.
+The engagement is built to remove the in-house tax. Board architecture is designed in 5 business days. Prototypes ship in 3–5 months on standard contract manufacturing. The customer pays $0 NRE and pays only for production hardware. A 14-year systems-integration record on the founding team, plus current NVIDIA Inception Program membership, is what makes that schedule realistic. The [TACTUN platform](/platform/) handles the FPGA, the Jetson integration, the motor-control silicon, and the safety partitioning, so the customer team stays focused on the autonomy stack.
 
 ## Talk to us
 
-If you are standing up a field-robotics product and the FPGA + Jetson architecture above looks like the right shape — but you would rather not absorb 18–24 months of carrier-board development to get there — [contact us](/contact). We will look at the actuator list, the sensor mix, and the safety envelope, and tell you whether the spine we already build maps to your machine.
+If you are standing up a field-robotics product and the FPGA + Jetson architecture above looks like the right shape — but you would rather not absorb 18–24 months of carrier-board development to get there — [contact us](/contact/). We will look at the actuator list, the sensor mix, and the safety envelope, and tell you whether the spine we already build maps to your machine.

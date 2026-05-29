@@ -53,11 +53,11 @@ The jump from developer kit to production field controller is not a firmware rev
 
 Three machine types define the range of conditions a field controller must survive.
 
-An **agricultural sprayer** running 12-hour shifts in [agricultural robotics](/use-cases#agriculture): continuous engine vibration, spray water and dust reaching the electronics enclosure, and thermal cycling from −20 °C pre-dawn cold starts to +45 °C afternoon cab temperatures under a Kansas summer sun.
+An **agricultural sprayer** running 12-hour shifts in [agricultural robotics](/use-cases/#agriculture): continuous engine vibration, spray water and dust reaching the electronics enclosure, and thermal cycling from −20 °C pre-dawn cold starts to +45 °C afternoon cab temperatures under a Kansas summer sun.
 
-An **autonomous excavator** in a surface mine — representative of [construction and mining](/use-cases#construction): diesel PTO vibration at 10–55 Hz continuous, dust concentrations that saturate enclosure filters in hours, and a 24 V DC bus that sees load-dump transients every time the charging system disconnects under load.
+An **autonomous excavator** in a surface mine — representative of [construction and mining](/use-cases/#construction): diesel PTO vibration at 10–55 Hz continuous, dust concentrations that saturate enclosure filters in hours, and a 24 V DC bus that sees load-dump transients every time the charging system disconnects under load.
 
-A **marine inspection ROV** operating in [marine and underwater](/use-cases#marine) conditions: saltwater spray and potential partial immersion, near-100% relative humidity, and connector corrosion on anything not hermetically sealed.
+A **marine inspection ROV** operating in [marine and underwater](/use-cases/#marine) conditions: saltwater spray and potential partial immersion, near-100% relative humidity, and connector corrosion on anything not hermetically sealed.
 
 Each machine is different. The following six constraints apply to all of them.
 
@@ -121,7 +121,7 @@ flowchart LR
 
 The architecture splits into two domains separated by a hardware boundary.
 
-The [FPGA real-time control](/platform#capabilities) layer closes the deterministic loops: PWM generation at ±2 ns accuracy with zero dependence on CPU load or interrupt latency, EtherCAT fieldbus at ≤100 µs cycle times with ≤1 µs distributed clock jitter between slave nodes, hardware watchdogs, and the safety interlock logic. For comparison, PREEMPT_RT Linux achieves approximately 60 µs timing jitter under load — an order of magnitude worse than a hard field-robotics requirement. Standard ROS2 on Ubuntu cannot guarantee a 1 ms control cycle with jitter below 200 µs. An FPGA has no OS, no scheduler, and no interrupt contention.
+The [FPGA real-time control](/platform/#capabilities) layer closes the deterministic loops: PWM generation at ±2 ns accuracy with zero dependence on CPU load or interrupt latency, EtherCAT fieldbus at ≤100 µs cycle times with ≤1 µs distributed clock jitter between slave nodes, hardware watchdogs, and the safety interlock logic. For comparison, PREEMPT_RT Linux achieves approximately 60 µs timing jitter under load — an order of magnitude worse than a hard field-robotics requirement. Standard ROS2 on Ubuntu cannot guarantee a 1 ms control cycle with jitter below 200 µs. An FPGA has no OS, no scheduler, and no interrupt contention.
 
 The Jetson Orin handles perception, planning, and on-device AI inference — everything that benefits from a GPU and a high-level software stack. Your algorithm is the brain. The controller is the spine.
 
@@ -163,17 +163,29 @@ These five questions separate serious controller vendors from PCB contract shops
 
 ## What TACTUN does
 
-TACTUN's founding team has shipped 800+ controllers across industrial machines. We define a board architecture — schematic, I/O selection, power tree, FPGA pin plan — in 5 business days from a complete system requirements document; see [how we work](/platform#how-we-work). NRE is $0; you pay for production hardware. A customized field controller reaches first prototype in 3–5 months through contract manufacturing.
+TACTUN's founding team has shipped 800+ controllers across industrial machines. We define a board architecture — schematic, I/O selection, power tree, FPGA pin plan — in 5 business days from a complete system requirements document; see [how we work](/platform/#how-we-work). NRE is $0; you pay for production hardware. A customized field controller reaches first prototype in 3–5 months through contract manufacturing.
 
 The platform pairs a Lattice ECP5 or AMD Artix-7 FPGA with a production Jetson Orin NX or Orin Nano module — not a developer kit. The board integrates the ISO 7637-class power tree, galvanic isolation to IEC 60664-1, and I/O matched to your specific actuators and sensors. Frank Bacon Machinery (Detroit, USA) co-developed their machine controller with TACTUN; John Stencel IV, CEO: "TACTUN became a key technology partner in our machine development." TACTUN is an NVIDIA Inception Program member.
 
-<figure>
-  <img src="/assets/posts/control-electronics-for-field-robots/tactun-field-controller-board.png"
-       alt="TACTUN production controller PCB showing the FPGA real-time section on the left, the Jetson Orin NX module connector in the centre, the galvanic isolation barrier between digital and motor domains, and the input power filtering section with transient suppression components at the bottom edge." />
-  <figcaption>TACTUN production controller board: FPGA real-time section, Jetson Orin NX integration, and isolated power domain in a single package.</figcaption>
-</figure>
-{/* image_brief: Annotated product photo or high-quality 3D render of a TACTUN controller PCB. Key visual elements: (1) FPGA section labelled "deterministic real-time control", (2) Jetson Orin NX module connector / mating area, (3) a visible isolation barrier or isolation IC package between the digital and power domains, (4) the input power filtering section showing TVS diodes or suppression components. Style: clean product photography on a neutral or white background with callout labels in the TACTUN brand typeface. Source: commission an annotated photo from the existing TACTUN prototype board, or request a 3D render from the board designer. Rafayel to source before merge. */}
+```mermaid
+flowchart LR
+    subgraph D["Digital domain"]
+        J["Jetson Orin NX — AI perception"]
+        F["FPGA — deterministic real-time control"]
+        J <--> F
+    end
+    ISO["Galvanic isolation barrier"]
+    subgraph P["Motor + power domain"]
+        FILT["Input power filtering — TVS / transient suppression"]
+        DRV["Motor drive outputs"]
+    end
+    F --> ISO
+    ISO --> DRV
+    FILT --> DRV
+```
+
+*TACTUN production controller board: an FPGA real-time section and Jetson Orin NX integration on the digital side, a galvanic isolation barrier, and an isolated motor/power domain — all in a single package.*
 
 ---
 
-Tell us what machine you're building — describe the environment, actuator types, and safety requirements, and we'll map out a controller architecture in 5 business days. [Start a conversation →](/contact)
+Tell us what machine you're building — describe the environment, actuator types, and safety requirements, and we'll map out a controller architecture in 5 business days. [Start a conversation →](/contact/)

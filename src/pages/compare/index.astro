@@ -18,6 +18,7 @@ try {
   title="Comparisons — TACTUN brain4machinery"
   description="Head-to-head comparisons of control electronics, carrier boards, and motor drives for field-deployed robots and intelligent machines."
   active="insights"
+  noIndex={comparisons.length === 0}
 >
   <section class="hero hero--short section">
     <div class="container">
@@ -33,12 +34,12 @@ try {
     <div class="container">
       {comparisons.length === 0 ? (
         <p class="text-muted text-center" style="font-size: 1.0625rem;">
-          Comparisons coming soon. While we draft them, see the <a href="/blog">blog</a>, browse the <a href="/guides">guides</a>, or <a href="/contact">tell us which match-ups you'd want covered</a>.
+          Comparisons coming soon. While we draft them, see the <a href="/blog/">blog</a>, browse the <a href="/guides/">guides</a>, or <a href="/contact/">tell us which match-ups you'd want covered</a>.
         </p>
       ) : (
         <div class="grid grid--2">
           {comparisons.map((entry) => (
-            <a href={`/compare/${entry.slug}`} class="card" style="text-decoration: none; display: block;">
+            <a href={`/compare/${entry.slug}/`} class="card" style="text-decoration: none; display: block;">
               <h3 class="card__title" style="font-size: 1.25rem;">{entry.data.title}</h3>
               <p class="card__text" style="margin-top: 0.5rem;">{entry.data.description}</p>
               <p class="text-muted" style="font-size: 0.8125rem; margin-top: 0.75rem;">

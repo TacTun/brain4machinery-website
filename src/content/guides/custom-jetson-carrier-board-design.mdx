@@ -59,13 +59,13 @@ The right Jetson Orin module is almost never the most capable one on the spec sh
 *TOPS figures: standard mode / JetPack 6.2 Super Mode. Temperature per NVIDIA product documentation and developer forum confirmations.*
 *† AGX Orin 64GB (commercial): power-mode range and minimum operating temperature not confirmed at publication. Verify against the current NVIDIA AGX Orin module datasheet before use in a design.*
 
-For most [NVIDIA Jetson](/platform)-based field-robotics programs, the decision collapses to three modules.
+For most [NVIDIA Jetson](/platform/)-based field-robotics programs, the decision collapses to three modules.
 
 **Orin Nano 8GB** fits single-camera guidance, basic depth perception, or any workload that runs comfortably at 40 TOPS and 25 W. JetPack 6.2's Super Mode raises available compute to 67 TOPS without a hardware swap, giving real headroom for model growth between production versions.
 
 **Orin NX 16GB** is the practical ceiling for a sealed industrial enclosure. At 100 TOPS standard (157 TOPS Super Mode) with high-bandwidth LPDDR5 memory, it handles multi-camera perception and vision-language model inference without hitting memory bandwidth as the first bottleneck. The 40 W extended mode, added in JetPack 6.2, is available when the thermal design can handle it — a constraint that tightens in a sealed IP67 housing on a hot summer day.
 
-**AGX Orin Industrial** enters only when two requirements collide: more than 157 TOPS *and* a confirmed −40 °C operational minimum. NVIDIA engineering has confirmed that the commercial Orin NX module's minimum operational temperature is −25 °C. Programs targeting −40 °C ambient — certain [agricultural robotics](/use-cases#agriculture) deployments and hard-rock mining applications — require the AGX Orin Industrial, a separate product family with a different PCB footprint and a lifecycle that extends to July 2033.
+**AGX Orin Industrial** enters only when two requirements collide: more than 157 TOPS *and* a confirmed −40 °C operational minimum. NVIDIA engineering has confirmed that the commercial Orin NX module's minimum operational temperature is −25 °C. Programs targeting −40 °C ambient — certain [agricultural robotics](/use-cases/#agriculture) deployments and hard-rock mining applications — require the AGX Orin Industrial, a separate product family with a different PCB footprint and a lifecycle that extends to July 2033.
 
 Budget compute headroom deliberately. Models grow with every OTA update, and a module running at the edge of its TOPS budget on shipping day will throttle within 18 months of software updates.
 
@@ -136,7 +136,7 @@ The Orin NX 16GB ships with 2× CAN FD, 3× USB 3.2, multiple MIPI CSI-2 camera 
 
 For motor control, it does not. Closing a servo current loop at 1 kHz from Linux requires a deterministic SPI transaction on every cycle with no missed deadlines — a guarantee Linux scheduling cannot provide. Publishing EtherCAT packets with cycle times ≤ 100 µs and jitter well below 1 µs requires an FPGA-based Fieldbus Memory Management Unit; standard Linux Ethernet drivers cannot approach that timing. Implementing ISO 13849-1 PLd or PLe safety interlocks — emergency-stop inputs, light-curtain channels, gate-driver enables — requires hardware timing that Linux cannot bound to PFHd < 10⁻⁶ per hour (PLd) or < 10⁻⁷ per hour (PLe).
 
-These are the conditions that justify adding an FPGA co-processor to the same carrier board. The [FPGA real-time control](/platform#capabilities) layer owns the motor PWM outputs, encoder interfaces, EtherCAT slave stack, and safety I/O. The Jetson handles perception, planning, and setpoint generation over a PCIe or SPI bridge on the same PCB. The result is an [AI-native controller architecture](/glossary/ai-native-controller-primer) where deterministic hardware timing and AI inference share a single production board. The [FPGA + Jetson hybrid architecture guide](/guides/fpga-jetson-hybrid-architecture) covers interconnect selection, FPGA family trade-offs, and the full safety partitioning pattern in detail.
+These are the conditions that justify adding an FPGA co-processor to the same carrier board. The [FPGA real-time control](/platform/#capabilities) layer owns the motor PWM outputs, encoder interfaces, EtherCAT slave stack, and safety I/O. The Jetson handles perception, planning, and setpoint generation over a PCIe or SPI bridge on the same PCB. The result is an [AI-native controller architecture](/glossary/ai-native-controller-primer/) where deterministic hardware timing and AI inference share a single production board. The [FPGA + Jetson hybrid architecture guide](/guides/fpga-jetson-hybrid-architecture/) covers interconnect selection, FPGA family trade-offs, and the full safety partitioning pattern in detail.
 
 ## EMC and EMI: the ground-plane reality
 
@@ -170,10 +170,10 @@ The co-development alternative compresses that timeline. A qualified partner del
 
 ## What TACTUN does
 
-TACTUN designs the control spine for robotics programs across [use cases](/use-cases) from construction automation to underwater inspection — wherever the machine runs on a battery bus in a demanding environment. The carrier board pairs a custom FPGA architecture for deterministic real-time control with Jetson edge AI compute, configured to your motor mix (servo, stepper, hydraulic, pneumatic), your voltage bus, and your connector standard. The customer owns the AI stack and the application logic; TACTUN owns the spine underneath.
+TACTUN designs the control spine for robotics programs across [use cases](/use-cases/) from construction automation to underwater inspection — wherever the machine runs on a battery bus in a demanding environment. The carrier board pairs a custom FPGA architecture for deterministic real-time control with Jetson edge AI compute, configured to your motor mix (servo, stepper, hydraulic, pneumatic), your voltage bus, and your connector standard. The customer owns the AI stack and the application logic; TACTUN owns the spine underneath.
 
-The Jetson robotics board is prototype-ready, with production units expected to ship within 2–3 months. The founding team brings 14 years of systems-integration experience across industrial and field-robotics programs, plus 2 USPTO-granted patents and current NVIDIA Inception Program membership. Details on the engagement structure are on the [how we work](/platform#how-we-work) page: board architecture in 5 business days, physical prototypes in 3–5 months, $0 NRE — the customer pays only for production hardware.
+The Jetson robotics board is prototype-ready, with production units expected to ship within 2–3 months. The founding team brings 14 years of systems-integration experience across industrial and field-robotics programs, plus 2 USPTO-granted patents and current NVIDIA Inception Program membership. Details on the engagement structure are on the [how we work](/platform/#how-we-work) page: board architecture in 5 business days, physical prototypes in 3–5 months, $0 NRE — the customer pays only for production hardware.
 
 ---
 
-If the design axes above — module selection, power tree, thermal, connectors, EMC, and lifecycle planning — look right for your machine, [contact us](/contact) with the actuator list, the battery voltage, and the certification targets. We will tell you whether the spine we already build maps to your program.
+If the design axes above — module selection, power tree, thermal, connectors, EMC, and lifecycle planning — look right for your machine, [contact us](/contact/) with the actuator list, the battery voltage, and the certification targets. We will tell you whether the spine we already build maps to your program.
