@@ -1,0 +1,107 @@
+{
+  "_generated": "Vendored from engine/style/forbidden_claims.yaml — do not edit by hand.",
+  "rules": [
+    {
+      "id": "vibe-coding",
+      "pattern": "\\bvibe[- ]coding\\b",
+      "flags": "i",
+      "reason": "Master Prompt: avoid \"first vibe-coding controller\""
+    },
+    {
+      "id": "no-custom-firmware",
+      "pattern": "no custom firmware",
+      "flags": "i",
+      "reason": "Master Prompt: avoid \"no custom firmware needed\""
+    },
+    {
+      "id": "10x-faster",
+      "pattern": "\\b10x faster\\b",
+      "flags": "i",
+      "reason": "Master Prompt: avoid \"10x faster development\""
+    },
+    {
+      "id": "percent-eliminated",
+      "pattern": "60[\\s\\-–]?80\\s*%[^\\n]*(eliminat|development)",
+      "flags": "i",
+      "reason": "Master Prompt: avoid \"60-80% of development work eliminated\""
+    },
+    {
+      "id": "tam-sam-som",
+      "pattern": "\\b(TAM|SAM|SOM)\\b",
+      "flags": "",
+      "reason": "WEBSITE_PRD: no TAM/SAM/SOM on website (investor data only)"
+    },
+    {
+      "id": "tam-46b",
+      "pattern": "\\$\\s*46\\s*B",
+      "flags": "i",
+      "reason": "Master Prompt: $46B TAM is investor-only"
+    },
+    {
+      "id": "pipeline-5m",
+      "pattern": "\\$\\s*5\\s*M\\+?\\s*pipeline",
+      "flags": "i",
+      "reason": "Master Prompt: avoid \"$5M+ pipeline\" on public site"
+    },
+    {
+      "id": "arr-100m",
+      "pattern": "\\$\\s*100\\s*M\\s*ARR",
+      "flags": "i",
+      "reason": "Master Prompt: avoid \"$100M ARR from 170 customers\""
+    },
+    {
+      "id": "170-customers",
+      "pattern": "\\b170\\s*customers\\b",
+      "flags": "i",
+      "reason": "Master Prompt: avoid \"$100M ARR from 170 customers\""
+    },
+    {
+      "id": "subscription-tomorrow",
+      "pattern": "subscription tomorrow",
+      "flags": "i",
+      "reason": "Master Prompt: avoid \"subscription tomorrow\""
+    },
+    {
+      "id": "controller-as-a-service",
+      "pattern": "controller[- ]as[- ]a[- ]service|\\bcaaS\\b",
+      "flags": "i",
+      "reason": "Master Prompt: avoid \"controller-as-a-service $1K\""
+    },
+    {
+      "id": "ten-engineers",
+      "pattern": "10\\s*full[- ]stack\\s*engineers",
+      "flags": "i",
+      "reason": "Master Prompt: avoid \"10 full-stack engineers\""
+    },
+    {
+      "id": "ruggedized-at-scale",
+      "pattern": "fully\\s*ruggedized\\s*field[- ]robotics\\s*(platform|product)?\\s*at\\s*scale",
+      "flags": "i",
+      "reason": "Master Prompt: do NOT claim ruggedized field-robotics platform at scale"
+    },
+    {
+      "id": "frank-bacon-revenue",
+      "pattern": "Frank\\s+Bacon[^.\\n]*?\\$",
+      "flags": "i",
+      "reason": "Master Prompt: do not mention Frank Bacon revenue figure"
+    },
+    {
+      "id": "revenue-200k",
+      "pattern": "\\$\\s*200\\s*[Kk]\\s*(annual|revenue|in\\s*revenue)",
+      "flags": "i",
+      "reason": "WEBSITE_PRD: $200K revenue is investor-only"
+    },
+    {
+      "id": "gross-margin",
+      "pattern": "gross\\s*margin[^\\n]{0,30}80",
+      "flags": "i",
+      "reason": "WEBSITE_PRD: 80%+ gross margins are investor-only"
+    },
+    {
+      "id": "solar-customer-name",
+      "pattern": "\\b(SolarBotix|SunSweep|HelioRobotics)\\b",
+      "flags": "",
+      "reason": "Master Prompt / CLAUDE.md: never publicly name the solar robotics customer"
+    }
+  ]
+}

@@ -20,9 +20,12 @@ import { fileURLToPath } from 'node:url';
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const repoRoot = resolve(__dirname, '..');
 
-// Patterns from TACTUN_Master_Prompt.txt — "Claims to avoid" section.
-// Each entry: { name, pattern, reason }
-const FORBIDDEN = [
+// FALLBACK rules — used ONLY if the vendored forbidden_claims.json is missing
+// or unparseable. The real source of truth is engine/style/forbidden_claims.yaml,
+// which the engine vendors to scripts/forbidden_claims.json on every content PR
+// (see loadRules below). Keeping a fallback means CI never silently passes with
+// zero rules. Each entry: { name, pattern, reason }.
+const FALLBACK_FORBIDDEN = [
   { name: 'vibe-coding claim', pattern: /\bvibe[- ]coding\b/i, reason: 'Master Prompt: avoid "first vibe-coding controller"' },
   { name: 'no custom firmware', pattern: /no custom firmware/i, reason: 'Master Prompt: avoid "no custom firmware needed"' },
   { name: '10x faster claim', pattern: /\b10x faster\b/i, reason: 'Master Prompt: avoid "10x faster development"' },
@@ -40,6 +43,30 @@ const FORBIDDEN = [
   { name: 'solar customer name (placeholder)', pattern: /\b(SolarBotix|SunSweep|HelioRobotics)\b/, reason: 'Master Prompt: do NOT publicly name the solar robotics customer' },
   { name: 'revenue figure $200K on public page', pattern: /\$\s*200\s*[Kk]\s*(annual|revenue|in\s*revenue)/i, reason: 'WEBSITE_PRD: $200K revenue is investor-only' },
 ];
+
+// The real rule set, vendored from the engine (forbidden_claims.json). Build
+// RegExp objects from {pattern, flags}; fall back to the hardcoded list above
+// if the file is missing/unparseable so CI is never left without rules.
+async function loadRules() {
+  try {
+    const raw = await readFile(join(__dirname, 'forbidden_claims.json'), 'utf8');
+    const data = JSON.parse(raw);
+    const rules = (data.rules || [])
+      .filter((r) => r && r.id && r.pattern)
+      .map((r) => ({
+        name: r.id,
+        pattern: new RegExp(r.pattern, r.flags || ''),
+        reason: r.reason || '',
+      }));
+    if (rules.length > 0) return rules;
+    console.warn('factual-linter: forbidden_claims.json had no rules — using fallback list.');
+  } catch (err) {
+    console.warn(
+      `factual-linter: could not load forbidden_claims.json (${err.message}) — using fallback list.`
+    );
+  }
+  return FALLBACK_FORBIDDEN;
+}
 
 // Filename extensions to scan
 const SCAN_EXTS = new Set(['.mdx', '.md', '.astro', '.html']);
@@ -77,10 +104,10 @@ async function collectFiles() {
   return files;
 }
 
-async function lintFile(file) {
+async function lintFile(file, rules) {
   const text = await readFile(file, 'utf8');
   const violations = [];
-  for (const rule of FORBIDDEN) {
+  for (const rule of rules) {
     const match = text.match(rule.pattern);
     if (match) {
       // find line number
@@ -93,10 +120,11 @@ async function lintFile(file) {
 }
 
 async function main() {
+  const rules = await loadRules();
   const files = await collectFiles();
   let total = 0;
   for (const file of files) {
-    const violations = await lintFile(file);
+    const violations = await lintFile(file, rules);
     if (violations.length > 0) {
       const rel = file.replace(repoRoot + '/', '');
       for (const v of violations) {
@@ -109,7 +137,9 @@ async function main() {
     console.error(`\nfactual-linter: ${total} forbidden-claim violation(s) found.`);
     process.exit(1);
   }
-  console.log(`factual-linter: scanned ${files.length} file(s), no forbidden claims found.`);
+  console.log(
+    `factual-linter: scanned ${files.length} file(s) against ${rules.length} rule(s), no forbidden claims found.`
+  );
 }
 
 main().catch((err) => {
