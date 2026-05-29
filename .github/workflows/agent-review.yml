@@ -1,0 +1,125 @@
+name: Agent review
+
+# Independent AI reviewer for every PR. Replaces "a human eyeballs it" with
+# "a separate agent reviews it" — the merge gate the team asked for.
+#
+# Flow:
+#   PR opened/updated -> this job calls the Anthropic API with the diff and the
+#   repo's content rules -> posts a verdict comment -> passes (APPROVE) or
+#   fails (REQUEST_CHANGES) the `agent-review` check.
+#
+# To ENFORCE it as a merge gate (so auto-merge waits for it), add an
+# `ANTHROPIC_API_KEY` repo secret, then add `agent-review` to the required
+# status checks on main (alongside `build`). Until the secret exists this job
+# passes NEUTRALLY so it never blocks the pipeline before it is configured.
+#
+# Security: runs on `pull_request` (NOT pull_request_target) and is skipped for
+# forks, so untrusted code from a fork PR can never read the API key.
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write   # to post the review comment
+
+concurrency:
+  group: agent-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  agent-review:
+    # Never expose secrets to a fork PR.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      MODEL: ${{ vars.AGENT_REVIEW_MODEL || 'claude-sonnet-4-6' }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      REPO: ${{ github.repository }}
+      PR: ${{ github.event.pull_request.number }}
+      PR_TITLE: ${{ github.event.pull_request.title }}
+    steps:
+      - name: Skip if not configured
+        id: cfg
+        run: |
+          if [ -z "${ANTHROPIC_API_KEY}" ]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=Agent review not configured::Add an ANTHROPIC_API_KEY secret to enable AI review as a merge gate. Passing neutrally for now."
+            gh pr comment "$PR" --repo "$REPO" --body \
+              "🤖 **Agent review skipped** — no \`ANTHROPIC_API_KEY\` secret is set, so the AI reviewer can't run yet. Add the secret (and then add \`agent-review\` to required status checks) to enforce automated review on every PR." || true
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Review diff with Claude
+        if: steps.cfg.outputs.configured == 'true'
+        run: |
+          set -uo pipefail
+
+          # Bound the diff so a huge PR can't blow the context/token budget.
+          DIFF="$(gh pr diff "$PR" --repo "$REPO" | head -c 60000)"
+          BODY="$(gh pr view "$PR" --repo "$REPO" --json body --jq '.body' | head -c 4000)"
+
+          SYSTEM=$(cat <<'SYS'
+          You are an independent, skeptical reviewer for the brain4machinery.com Astro website repo.
+          Approve only changes that are correct and safe to ship to production automatically.
+
+          Hard rules to enforce (REQUEST_CHANGES if violated):
+          - Content frontmatter MUST satisfy src/content/config.ts. Common traps:
+            * title <= 70 chars; description <= 160; tlDr 40-400 if present.
+            * guides jsonLdType must be TechArticle or HowTo (NOT "Article").
+            * blog jsonLdType must be BlogPosting or TechArticle.
+            * canonical must be an absolute URL WITH a trailing slash (site is trailingSlash:'always').
+          - No <img>/srcset/og:image pointing at /assets/... files that are not added in the same PR. Prefer mermaid diagrams.
+          - Internal links should use trailing-slash form (e.g. /blog/ not /blog) to avoid 308 redirects.
+          - Voice: restrained, technical, engineer-to-engineer. No marketing fluff.
+          - Forbidden: revenue figures, gross margins, TAM/SAM/SOM; never name the solar robotics customer; no unverifiable superlatives.
+
+          Be decisive. If the diff is a trivial/safe content or chore change that follows the rules, APPROVE.
+          Output a short bulleted review, then a final line that is EXACTLY one of:
+          VERDICT: APPROVE
+          VERDICT: REQUEST_CHANGES
+          SYS
+          )
+
+          USER="PR #$PR: $PR_TITLE
+
+          PR description:
+          $BODY
+
+          Unified diff (truncated to 60k chars):
+          $DIFF"
+
+          REQ="$(jq -n --arg m "$MODEL" --arg s "$SYSTEM" --arg u "$USER" \
+            '{model:$m, max_tokens:1200, system:$s, messages:[{role:"user", content:$u}]}')"
+
+          RESP="$(curl -sS https://api.anthropic.com/v1/messages \
+            -H "x-api-key: ${ANTHROPIC_API_KEY}" \
+            -H "anthropic-version: 2023-06-01" \
+            -H "content-type: application/json" \
+            -d "$REQ")"
+
+          TEXT="$(printf '%s' "$RESP" | jq -r '.content[0].text // empty')"
+          if [ -z "$TEXT" ]; then
+            echo "::error title=Agent review failed::Empty/invalid response from Anthropic API."
+            printf '%s\n' "$RESP" | jq -r '.error.message // "unknown error"' || true
+            # Fail closed: an unreviewable PR should not auto-merge.
+            exit 1
+          fi
+
+          printf '%s\n' "$TEXT"
+
+          gh pr comment "$PR" --repo "$REPO" --body "🤖 **Agent review** (model: \`$MODEL\`)
+
+          $TEXT" || true
+
+          if printf '%s' "$TEXT" | grep -qE 'VERDICT:[[:space:]]*APPROVE'; then
+            echo "Agent APPROVED."
+            exit 0
+          else
+            echo "::error title=Agent requested changes::See the agent-review comment on the PR."
+            exit 1
+          fi
