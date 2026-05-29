@@ -76,3 +76,5 @@ never here.
   redirects, and canonical mismatches, enriched with the GSC URL Inspection API.
 - Post-deploy smoke: the website dispatches `website-deployed` to the engine,
   which re-runs the live check against production and alerts on any problem.
+
+<!-- agent-review verification PR (2026-05-29) — safe to close; confirms the AI reviewer runs with ANTHROPIC_API_KEY set -->
