@@ -1,5 +1,5 @@
 ---
-title: "Top 10 hardware brains for service robotics (2026): an engineer's ranking"
+title: "Top 10 hardware brains for service robotics (2026 ranking)"
 description: "Engineer-honest ranking of 10 hardware brains for service robotics in 2026. Real specs, named weaknesses, and deployment guidance by vertical."
 publishedDate: 2026-05-27
 author: "Rafayel Ghasabyan"
@@ -10,8 +10,8 @@ secondaryKeywords:
   - "controller platform service robotics"
   - "robot brain comparison"
   - "edge AI compute for service robots"
-jsonLdType: "Article"
-canonical: "https://brain4machinery.com/guides/top-10-hardware-brains-for-service-robotics"
+jsonLdType: "TechArticle"
+canonical: "https://brain4machinery.com/guides/top-10-hardware-brains-for-service-robotics/"
 tlDr: "No single off-the-shelf brain delivers both 275 TOPS of AI compute and sub-10 µs real-time determinism. This ranking scores 10 platforms across eight criteria — compute headroom, scheduling jitter, motor I/O, power envelope, ecosystem maturity, lifecycle, cost, and safety certification — so you can match hardware architecture to the demands of your service-robot program."
 difficulty: "intermediate"
 estimatedReadMinutes: 14
@@ -44,12 +44,18 @@ The PLC-grade platforms solve the real-time half. Beckhoff's TwinCAT 3 achieves 
 
 That integration cost is the real problem. Most programs underestimate it by 12–18 months. Building an equivalent AI-plus-real-time-control platform from scratch typically costs $900K–$2M+ and 18–24 months of engineering time. The platforms in this list represent the alternatives — each with a different trade-off between AI headroom, determinism, and integration burden.
 
-<figure>
-  <img src="/assets/posts/top-10-hardware-brains-for-service-robotics/service-robot-control-architecture.png"
-       alt="Block diagram comparing a Jetson-only architecture (perception only, no real-time motor control) versus a Jetson-plus-FPGA co-designed architecture (perception and deterministic control on one PCB), illustrating the integration gap each approach leaves open." />
-  <figcaption>The control architecture gap: perception-only Jetson carriers versus a co-designed AI-plus-real-time spine.</figcaption>
-</figure>
-{/* image_brief: Line-drawing / technical diagram with two side-by-side block diagrams. Left block: Jetson module → carrier board → "fieldbus →" separate motor controller; shows the integration boundary as a dashed line. Right block: Jetson module + FPGA on one PCB, shared power rail, direct motor I/O lines. Clean monochrome style consistent with technical datasheets. Commission from a technical illustrator or generate via DALL-E with prompt: "Two-panel engineering block diagram, white background, monochrome, technical line-drawing style: left panel labeled 'Jetson carrier + separate motor controller' showing two boxes connected by a fieldbus dashed line; right panel labeled 'Co-designed AI + FPGA spine' showing one unified box with motor drive outputs." */}
+```mermaid
+flowchart LR
+    subgraph S1["Jetson-only carrier (perception only)"]
+        A1["Jetson module — AI perception"] -->|"fieldbus: integration gap"| A2["Separate motor controller"]
+    end
+    subgraph S2["Co-designed AI + real-time spine (one PCB)"]
+        B1["Jetson module — AI perception"] --> B2["FPGA — deterministic control"]
+        B2 -->|"direct motor I/O"| B3["Drives + motors"]
+    end
+```
+
+*The control architecture gap: a perception-only Jetson carrier leaves an integration boundary at the fieldbus, while a co-designed AI-plus-real-time spine puts perception and deterministic control on one PCB.*
 
 ## Eight criteria, ranked and declared up-front
 
