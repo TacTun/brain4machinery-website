@@ -67,7 +67,8 @@ left a merged guide 404 in production.
 `engine/style/forbidden_claims.yaml` (engine repo) is the source of truth. The
 engine vendors it to **`scripts/forbidden_claims.json`** on every content PR;
 `scripts/factual-linter.mjs` reads that JSON (falling back to a hardcoded list
-only if the file is missing). Edit rules in the engine YAML, never here.
+if the file is missing, unparseable, or empty). Edit rules in the engine YAML,
+never here.
 
 ## Monitoring
 
