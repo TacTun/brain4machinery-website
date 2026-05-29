@@ -33,10 +33,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Dispatch production deploy
+        # PR-controlled values go through env: (never interpolated into the
+        # script body) to keep the no-shell-injection pattern consistent.
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          MERGED_BY: ${{ github.event.pull_request.merged_by.login }}
+          TARGET_REPO: ${{ github.repository }}
         run: |
-          echo "PR #${{ github.event.pull_request.number }} merged by ${{ github.event.pull_request.merged_by.login }}; dispatching production deploy."
-          gh workflow run deploy.yml \
-            --repo "${{ github.repository }}" \
-            --ref main
+          echo "PR #${PR_NUMBER} merged by ${MERGED_BY}; dispatching production deploy."
+          gh workflow run deploy.yml --repo "$TARGET_REPO" --ref main
