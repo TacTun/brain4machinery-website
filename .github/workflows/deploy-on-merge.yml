@@ -1,0 +1,45 @@
+name: Deploy on merge (bot path)
+
+# WHY THIS EXISTS
+# Production deploys run from deploy.yml on `push` to main. But when a PR is
+# merged by automation using the repository GITHUB_TOKEN (our auto-merge
+# workflow), GitHub deliberately does NOT emit a `push` event for that merge
+# (loop-prevention). Result: bot-merged PRs silently never deployed — which is
+# exactly how a merged guide ended up 404 in production.
+#
+# This workflow listens for a PR being CLOSED+MERGED and, only when the merge
+# was performed by a bot, dispatches the production deploy via
+# workflow_dispatch. workflow_dispatch is one of the two event types that ARE
+# allowed to fire from a GITHUB_TOKEN context, so the deploy reliably runs.
+#
+# Human / PAT merges are skipped here because their merge push already triggers
+# deploy.yml's `push:main` — skipping avoids a redundant second deploy.
+
+on:
+  pull_request_target:
+    types: [closed]
+    branches: [main]
+
+permissions:
+  actions: write   # to dispatch deploy.yml
+
+jobs:
+  dispatch-deploy:
+    # Only on an actual merge, and only when a bot did the merging.
+    if: >-
+      github.event.pull_request.merged == true &&
+      (endsWith(github.event.pull_request.merged_by.login, '[bot]') ||
+       github.event.pull_request.merged_by.login == 'tactun-content-bot')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch production deploy
+        # PR-controlled values go through env: (never interpolated into the
+        # script body) to keep the no-shell-injection pattern consistent.
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          MERGED_BY: ${{ github.event.pull_request.merged_by.login }}
+          TARGET_REPO: ${{ github.repository }}
+        run: |
+          echo "PR #${PR_NUMBER} merged by ${MERGED_BY}; dispatching production deploy."
+          gh workflow run deploy.yml --repo "$TARGET_REPO" --ref main

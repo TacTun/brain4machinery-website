@@ -1,7 +1,12 @@
 name: Deploy to Cloudflare Pages
 
 # Triggers
-# - push to main          → production deploy (--branch=main on CF Pages)
+# - push to main          → production deploy (--branch=main on CF Pages).
+#                            PRODUCTION VALIDATES BEFORE PUBLISH (see gate below).
+# - workflow_dispatch     → manual / programmatic production deploy. Used by
+#                            deploy-on-merge.yml to deploy after a bot/auto-merge,
+#                            because a GITHUB_TOKEN merge push does NOT trigger
+#                            the `push:` event (GitHub loop-prevention).
 # - push to article/**    → preview deploy on the branch name. Cloudflare
 #                            Pages exposes each non-production branch at
 #                            <branch>.brain4machinery-website.pages.dev,
@@ -12,7 +17,6 @@ name: Deploy to Cloudflare Pages
 # - pull_request          → same preview-branch deploy for any PR, so
 #                            reviewers can open the article rendered
 #                            without checking out the branch locally.
-# - workflow_dispatch     → manual trigger.
 #
 # Note: When a PR is opened from an `article/**` branch, BOTH the push AND
 # the pull_request triggers fire. The `concurrency:` block below serializes
@@ -60,10 +64,22 @@ jobs:
       - name: Install Playwright chromium
         run: npx playwright install --with-deps chromium
 
-      # Build comes BEFORE lint and BEFORE publish so:
-      #  (a) the build artifact is required for publish anyway, and
-      #  (b) the lint steps can run after publish (see below).
+      # Build produces the dist artifact required for both publish and the
+      # link checker (which scans built HTML).
       - run: npm run build
+
+      # Resolve whether this run is a PRODUCTION deploy:
+      #   push to main, or workflow_dispatch on main.
+      # Preview deploys (PRs, article/** pushes) are NOT production.
+      - name: Resolve deploy mode
+        id: mode
+        run: |
+          if [ "${{ github.ref }}" = "refs/heads/main" ] && \
+             { [ "${{ github.event_name }}" = "push" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; }; then
+            echo "prod=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "prod=false" >> "$GITHUB_OUTPUT"
+          fi
 
       # Resolve the branch name for Cloudflare Pages:
       # - on push          → github.ref_name (e.g. "main" or "article/foo")
@@ -82,15 +98,21 @@ jobs:
           echo "raw=$RAW"   >> $GITHUB_OUTPUT
           echo "slug=$SLUG" >> $GITHUB_OUTPUT
 
-      # PUBLISH BEFORE LINT.
-      # Rationale: the whole point of preview deploys is to let reviewers see
-      # the rendered article in its real layout. If lint:facts or lint:links
-      # fails, that's EXACTLY when a reviewer wants the URL — to inspect the
-      # broken link/fact in context. Running lint before publish locked the
-      # reviewer out of the artifact that would help them fix the failure.
-      # Required-check enforcement still happens (the lint steps below fail
-      # the workflow run if they error, so branch protection can block merge),
-      # but the preview is alive regardless.
+      # PRODUCTION GATE — validate BEFORE publishing to production.
+      # On main (push or dispatch) a lint failure must stop the deploy so we
+      # never publish broken facts/links to the live site. This is the fix for
+      # the previous ordering, where production published before validation ran.
+      - name: Production gate — lint before publish
+        if: steps.mode.outputs.prod == 'true'
+        run: |
+          npm run lint:facts
+          npm run lint:links
+
+      # PUBLISH.
+      # For PREVIEWS we publish BEFORE lint (see preview lint below): the whole
+      # point of a preview is to let a reviewer see the rendered article in its
+      # real layout — including when lint failed, so they can inspect the
+      # broken link/fact in context. For PRODUCTION the gate above already ran.
       - name: Publish to Cloudflare Pages
         id: publish
         uses: cloudflare/wrangler-action@v4
@@ -102,7 +124,7 @@ jobs:
       # On PRs, post the preview URL as a comment so the reviewer (and any
       # forwarded CTO) gets a clickable, self-contained link in their inbox
       # without having to dig through CF Pages dashboards. Posted BEFORE
-      # lint so the URL is available even on a lint failure.
+      # the preview lint so the URL is available even on a lint failure.
       #
       # SHA-pinned to v2.9.4 (released 2025-09-18) so a tag-rewrite attack
       # on the action can't escalate against our pull-requests:write +
@@ -122,18 +144,22 @@ jobs:
 
             _If lint failed for this PR, the preview is still live above — open it to inspect the failing link/fact in context._
 
-      # Lint AFTER publish. A lint failure still fails the workflow run
-      # (and blocks branch protection if the check is required), but by
-      # this point the preview URL is already comment-posted on the PR.
-      - run: npm run lint:facts
-      - run: npm run lint:links
+      # PREVIEW LINT — after publish, previews only. A lint failure still fails
+      # the workflow run (the CI workflow's required `build` check also lints,
+      # and blocks merge via branch protection), but the preview URL is already
+      # posted above for the reviewer.
+      - name: Lint (preview, post-publish)
+        if: steps.mode.outputs.prod != 'true'
+        run: |
+          npm run lint:facts
+          npm run lint:links
 
       # Only fire the engine-deploy notifier for ACTUAL production deploys
-      # (push to main, NOT PRs or article-branch pushes). Preview deploys
-      # should not log themselves as a real publication in the engine's
-      # state/analytics/deploys.log.
+      # (push to main or workflow_dispatch on main, NOT PRs or article-branch
+      # pushes). Preview deploys should not log themselves as a real
+      # publication in the engine's state/analytics/deploys.log.
       - name: Notify engine of deploy
-        if: success() && github.ref == 'refs/heads/main' && github.event_name == 'push' && env.ENGINE_DISPATCH_TOKEN != ''
+        if: success() && steps.mode.outputs.prod == 'true' && env.ENGINE_DISPATCH_TOKEN != ''
         env:
           ENGINE_DISPATCH_TOKEN: ${{ secrets.ENGINE_DISPATCH_TOKEN }}
         uses: peter-evans/repository-dispatch@v4

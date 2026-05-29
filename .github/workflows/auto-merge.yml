@@ -1,11 +1,22 @@
 name: Auto-merge auto-merge-ok PRs
 
 # Watches PRs that carry the `auto-merge-ok` label (applied by
-# brain4machinery-engine's PR Builder when Editor returns a clean PASS on
-# a low-risk collection — currently glossary only). On a qualifying PR,
-# enables GitHub's native auto-merge with --squash, which:
-#   - waits for required checks (build / lint:facts / lint:links / check) to pass,
+# brain4machinery-engine's PR Builder). On a qualifying PR, enables GitHub's
+# native auto-merge with --squash, which:
+#   - waits for the REQUIRED status checks on main to pass,
 #   - then squash-merges + deletes the branch.
+#
+# Required checks are configured in branch protection. Today that is `build`
+# (the CI workflow: astro check + lint:facts + build + lint:links). Once an
+# ANTHROPIC_API_KEY secret is added, also add `agent-review` to the required
+# checks so EVERY auto-merge waits for the AI reviewer (agent-review.yml) —
+# that is the "separate agent reviews each PR, no human in the loop" gate.
+#
+# Because this merge runs under GITHUB_TOKEN, the resulting push to main does
+# NOT emit a `push` event (loop-prevention), so deploy.yml's push trigger does
+# not fire. deploy-on-merge.yml covers that: it dispatches the production
+# deploy after a bot merge. Without it, auto-merged PRs never deployed.
+#
 # If checks have already passed by the time we get here, merge fires immediately.
 # If the PR is later disqualified (someone strips the label, a new commit
 # breaks CI), GitHub cancels the pending merge automatically.
