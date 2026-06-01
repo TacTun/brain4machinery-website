@@ -1,0 +1,101 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+// Campaign landing page for the RAISE Summit 2026 (Paris) pitch-deck QR code.
+// One job: convert a QR scanner into a booked meeting or a saved contact.
+//
+// Near-verbatim sibling of vivatech26.astro — same structure, same shared
+// components and visual system (light theme, purple #6D28D9, Inter, shared
+// .btn components). Only the event name and the page-scoped image assets differ.
+//
+// The hero/headshot images are RAISE-named copies (board_jetson_raise.*,
+// team_rafayel_raise.*) added in THIS PR on purpose: the agent-review gate
+// rejects <img>/og:image references to /assets/ files not added in the same PR.
+//
+// Both URLs below are Rafayel-provided; worth a final click-test before launch.
+const calendlyUrl = 'https://calendly.com/rafayelg/30min';
+const linkedinUrl = 'https://www.linkedin.com/in/rafayel/';
+---
+<BaseLayout
+  title="TACTUN at RAISE Summit 2026 · Brain4Machinery"
+  description="The control board for autonomous machines. Met at RAISE Summit 2026 in Paris — book a meeting or save the contact."
+  active=""
+  ogImage="/assets/board_jetson_raise.jpg"
+>
+  <!-- Section 1 — Hero (board image + context eyebrow + H1). The two CTAs sit
+       inline in the hero so the primary actions stay above the fold on a phone. -->
+  <section class="hero hero--short">
+    <div class="container">
+      <div class="hero__inner">
+        <div class="hero__content" style="max-width: 640px;">
+          <span class="label">Met at RAISE Summit 2026 · Paris</span>
+          <h1>The control board for <span class="accent">autonomous machines.</span></h1>
+
+          <!-- Section 2 — Two-button CTA row -->
+          <div class="rs-cta">
+            <a href={calendlyUrl} target="_blank" rel="noopener" class="btn btn--primary">Book a meeting</a>
+            <a href="/rafayel_ghasabyan.vcf" download class="btn btn--secondary">Save contact</a>
+          </div>
+        </div>
+        <div class="hero__image">
+          <picture>
+            <source srcset="/assets/board_jetson_raise.webp" type="image/webp">
+            <img src="/assets/board_jetson_raise.jpg" alt="TACTUN AI-native controller board" width="560" height="420" loading="eager" fetchpriority="high" decoding="async">
+          </picture>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 3 — One-line tagline (repeats the headline as a visual anchor) -->
+  <section style="padding: 0.5rem 0 3rem; text-align: center;">
+    <div class="container">
+      <p style="font-size: 1.25rem; color: var(--text-secondary); max-width: 560px; margin: 0 auto;">The control board for autonomous machines.</p>
+    </div>
+  </section>
+
+  <!-- Section 4 — Founder block -->
+  <section class="section section--alt" style="padding: 4rem 0;">
+    <div class="container">
+      <div class="team-member" style="max-width: 360px; margin: 0 auto;">
+        <picture>
+          <source srcset="/assets/team_rafayel_raise.webp" type="image/webp">
+          <img src="/assets/team_rafayel_raise.jpg" alt="Rafayel Ghasabyan, Founder and CEO of TACTUN" width="140" height="140" loading="lazy" decoding="async">
+        </picture>
+        <div class="team-member__name">Rafayel Ghasabyan</div>
+        <div class="team-member__role">Founder &amp; CEO, TACTUN</div>
+        <p style="margin-top: 0.75rem; font-size: 1rem;">
+          <a href="mailto:rafayelg@tactun.com">rafayelg@tactun.com</a>
+          <span class="text-muted" aria-hidden="true"> · </span>
+          <a href={linkedinUrl} target="_blank" rel="noopener">LinkedIn</a>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 5 — Sign-off line (the site's global footer renders below this) -->
+  <section style="padding: 2.5rem 0; text-align: center;">
+    <div class="container">
+      <p class="text-muted" style="font-size: 0.9375rem;">Met at RAISE Summit 2026 · Paris · brain4machinery.com</p>
+    </div>
+  </section>
+
+  <style>
+    /* Page-local: equal-width, comfortably tappable CTAs — side by side on
+       wider screens, full-width stacked on phones (>=48px tap targets). */
+    .rs-cta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+    .rs-cta .btn {
+      flex: 1 1 0;
+      justify-content: center;
+      min-width: 0;
+    }
+    @media (max-width: 520px) {
+      .rs-cta .btn { flex-basis: 100%; }
+    }
+  </style>
+</BaseLayout>
