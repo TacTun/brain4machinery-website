@@ -82,6 +82,26 @@ svg[id^="mermaid-"] foreignObject p {
   border-radius: 0;
 }
 
+/* Mermaid diagrams render at their natural width inside a horizontally
+   scrollable panel (wrapped by rehypeMermaidScroll in astro.config.mjs). This
+   keeps labels at a legible size: a wide diagram (e.g. the decision tree) breaks
+   out past the 760px article column and scrolls, instead of shrinking to ~48%
+   and becoming unreadable. Capped at 96vw so it never forces page-level scroll. */
+.mermaid-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 1.75rem 0;
+  width: max-content;
+  max-width: min(96vw, 1100px);
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.mermaid-scroll svg[id^="mermaid-"] {
+  display: block;
+  margin: 0 auto;
+}
+
 /* --- Layout --- */
 .container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 1.25rem; }
 .section { padding: 5rem 0; }
