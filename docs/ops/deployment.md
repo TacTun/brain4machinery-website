@@ -25,7 +25,7 @@ the built `dist/` HTML.
 | Event | Result |
 |---|---|
 | push to `main` (human/PAT merge) | **production** deploy (`--branch=main`) |
-| `workflow_dispatch` on `main` | production deploy (used by the bot path below) |
+| `workflow_dispatch` on `main` | production deploy (used by the deploy watchdog below) |
 | push to `article/**`, or any PR | **preview** deploy at `<branch>.brain4machinery-website.pages.dev` |
 
 **Production gate:** on production, `lint:facts` + `lint:links` run **before**
@@ -33,13 +33,22 @@ the Cloudflare publish, so broken facts/links can't go live. Previews publish
 *before* lint so a reviewer can inspect a broken article in context.
 
 **The GITHUB_TOKEN deploy gap (important):** a PR merged by the auto-merge
-workflow uses `GITHUB_TOKEN`, and GitHub does **not** emit a `push` event for
-that merge (loop-prevention). So `deploy.yml`'s `push:main` trigger does *not*
-fire for bot merges. `.github/workflows/deploy-on-merge.yml` covers this: on a
-bot-merged PR it dispatches the production deploy via `workflow_dispatch`
-(which *is* allowed from `GITHUB_TOKEN`). Human/PAT merges already fire
-`push:main`, so they're skipped there (no double deploy). This gap is what once
-left a merged guide 404 in production.
+workflow uses `GITHUB_TOKEN`, and GitHub's loop-prevention emits **no events**
+for that merge — not the `push:main` that `deploy.yml` listens for, and not a
+`pull_request: closed` either. So neither `deploy.yml` nor any event-triggered
+listener fires for a bot merge. (An earlier `deploy-on-merge.yml` tried the
+`pull_request_target: closed` route; it was suppressed for the same reason and
+silently never ran for bot merges — which is what left a merged guide 404 in
+production, confirmed again on PR #41, 2026-06-04.)
+
+`.github/workflows/deploy-on-merge.yml` now covers this as a **scheduled
+watchdog** (every 15 min): it checks whether main's current HEAD already has a
+production deploy run and, if not, dispatches `deploy.yml` via
+`workflow_dispatch` (the one event type allowed from a `GITHUB_TOKEN` context).
+It is merge-method-agnostic — human/PAT merges deploy instantly via `push:main`
+and the watchdog then finds nothing to do; bot merges go live within ~one
+interval. A given SHA is dispatched at most once, so a failing deploy can't
+loop (its failure surfaces in the engine's failing-workflow digest instead).
 
 ## Branch protection & review
 

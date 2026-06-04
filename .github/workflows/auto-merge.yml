@@ -12,10 +12,13 @@ name: Auto-merge auto-merge-ok PRs
 # checks so EVERY auto-merge waits for the AI reviewer (agent-review.yml) —
 # that is the "separate agent reviews each PR, no human in the loop" gate.
 #
-# Because this merge runs under GITHUB_TOKEN, the resulting push to main does
-# NOT emit a `push` event (loop-prevention), so deploy.yml's push trigger does
-# not fire. deploy-on-merge.yml covers that: it dispatches the production
-# deploy after a bot merge. Without it, auto-merged PRs never deployed.
+# Because this merge runs under GITHUB_TOKEN, the resulting push to main emits
+# NO `push` event (loop-prevention) — so deploy.yml's push trigger does not
+# fire, and neither would a `pull_request: closed` listener (same suppression).
+# The scheduled watchdog in deploy-on-merge.yml covers this: it polls "is main's
+# HEAD deployed?" and dispatches deploy.yml via workflow_dispatch (the one event
+# type allowed from a GITHUB_TOKEN context) when it isn't. Without it,
+# auto-merged PRs would sit undeployed (404) in production.
 #
 # If checks have already passed by the time we get here, merge fires immediately.
 # If the PR is later disqualified (someone strips the label, a new commit
