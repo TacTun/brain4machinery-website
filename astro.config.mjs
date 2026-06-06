@@ -21,6 +21,47 @@ const mermaidOptions = {
   },
 };
 
+// rehype-mermaid emits each diagram as <svg width="100%" style="max-width:Npx">,
+// which shrinks-to-fit the ~760px article column. A wide flowchart (e.g. a
+// decision tree at 1455px) then scales to ~48% and its labels become unreadable.
+// This plugin wraps every mermaid SVG in a <div class="mermaid-scroll"> and pins
+// the SVG to its natural viewBox width, so CSS can render it at legible size and
+// scroll horizontally (and break out past the text column) instead of shrinking.
+function rehypeMermaidScroll() {
+  return (tree) => {
+    const wrap = (node) => {
+      if (!node || !Array.isArray(node.children)) return;
+      node.children = node.children.map((child) => {
+        if (
+          child.type === 'element' &&
+          child.tagName === 'svg' &&
+          child.properties &&
+          typeof child.properties.id === 'string' &&
+          child.properties.id.startsWith('mermaid-')
+        ) {
+          const vb = String(child.properties.viewBox || child.properties.viewbox || '')
+            .trim()
+            .split(/\s+/);
+          const w = parseFloat(vb[2]);
+          delete child.properties.width; // drop width="100%"
+          child.properties.style = Number.isFinite(w)
+            ? `width:${Math.ceil(w)}px;max-width:${Math.ceil(w)}px;height:auto;`
+            : 'height:auto;';
+          return {
+            type: 'element',
+            tagName: 'div',
+            properties: { className: ['mermaid-scroll'] },
+            children: [child],
+          };
+        }
+        wrap(child);
+        return child;
+      });
+    };
+    wrap(tree);
+  };
+}
+
 // --- Sitemap lastmod from real content dates -------------------------------
 // @astrojs/sitemap otherwise stamps every URL with the build time, which sends
 // search engines a noisy "everything changed" signal. We map each
@@ -71,11 +112,11 @@ export default defineConfig({
       type: 'shiki',
       excludeLangs: ['mermaid'],
     },
-    rehypePlugins: [[rehypeMermaid, mermaidOptions]],
+    rehypePlugins: [[rehypeMermaid, mermaidOptions], rehypeMermaidScroll],
   },
   integrations: [
     mdx({
-      rehypePlugins: [[rehypeMermaid, mermaidOptions]],
+      rehypePlugins: [[rehypeMermaid, mermaidOptions], rehypeMermaidScroll],
     }),
     sitemap({
       changefreq: 'weekly',
