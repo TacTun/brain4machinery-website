@@ -1,0 +1,136 @@
+---
+title: "ISO 13849 for Robotic Machinery: Performance Levels & Categories"
+description: "A practical glossary of ISO 13849-1 — performance levels PL a–e, categories B–4, and the architectural pattern that keeps AI outside the safety boundary."
+publishedDate: 2026-06-06
+author: "Rafayel Ghasabyan"
+primaryKeyword: "ISO 13849 robotic machinery"
+secondaryKeywords:
+  - "ISO 13849-1 performance level"
+  - "PL-d PL-e robotics"
+  - "machinery safety standard"
+  - "functional safety for robots"
+jsonLdType: "DefinedTerm"
+term: "ISO 13849"
+relatedTerms:
+  - "IEC 62061"
+  - "IEC 61508"
+  - "ISO 10218"
+  - "ISO 12100"
+  - "performance level (PL)"
+  - "safety integrity level (SIL)"
+tlDr: >-
+  ISO 13849-1 governs safety-related parts of machine control systems (SRP/CS) using five Performance Levels (PL a–e) and five Categories (B–4). Robot work cells require PL d at minimum for functions like emergency stop and speed monitoring. The AI/Linux stack carries no safety rating and must stay outside the SRP/CS boundary — a hardware watchdog enforces this.
+faq:
+  - q: "What does ISO 13849-1 cover?"
+    a: >-
+      ISO 13849-1 covers the safety-related parts of control systems (SRP/CS) in machinery — the portions that, if they fail, immediately increase risk to people nearby. It specifies design rules and validation methods for safety functions including emergency stop, interlocks, two-hand controls, and speed or position monitoring. The current edition is ISO 13849-1:2023 (Edition 4, published April 2023).
+  - q: "What Performance Level does a robot need?"
+    a: >-
+      ISO 10218-2:2025 sets PL d (SIL 2) as the minimum for safety-rated control functions in robot work cells — covering safety-rated monitored stop, power-and-force limiting, and speed-and-separation monitoring. Risk assessment per ISO 12100 may require PL e for high-risk axes or specific collaborative modes. PL d means a probability of dangerous failure between 10⁻⁷ and 10⁻⁶ per hour, or roughly one dangerous failure per 1–10 million operating hours.
+  - q: "What is the difference between PL d and PL e?"
+    a: >-
+      PL d requires PFHd ≥ 10⁻⁷ and < 10⁻⁶ per hour, mapping to SIL 2; PL e requires PFHd ≥ 10⁻⁸ and < 10⁻⁷ per hour, mapping to SIL 3. In practice, PL e demands dual-channel Category 3 or Category 4 architecture with high-MTTFd components and average diagnostic coverage (DCavg) of at least 99%. Risk assessment per ISO 12100 determines which level a given safety function requires — the standard does not assign PL universally to a machine type.
+  - q: "What is the difference between Category 3 and Category 4?"
+    a: >-
+      Both Category 3 and Category 4 use dual-channel redundant architecture and can achieve PL e. The distinction is what happens when faults accumulate: Category 3 detects a single fault and keeps the safety function active until the fault is cleared; Category 4 requires that any accumulated fault be detected before the next demand on the safety function, so an undetected fault chain cannot cause loss of protection. Category 4 additionally requires DCavg ≥ 99% and a common cause failure (CCF) score of at least 65 on the standard's checklist.
+  - q: "Can a ROS 2 or Linux system be part of the ISO 13849 safety boundary?"
+    a: >-
+      No. Standard NVIDIA Jetson modules running ROS 2 on Linux carry no IEC 61508 or ISO 26262 functional safety certification. A Linux kernel scheduler can preempt or park a process with no deterministic upper bound on latency — making a guaranteed safe-state response time impossible to certify. The safety function must reside on a separately certified layer — an FPGA or safety-rated MCU — that drives actuators to safe state independent of whatever the application processor is doing.
+  - q: "What is MTTFd and why does it matter for ISO 13849?"
+    a: >-
+      MTTFd is Mean Time to Dangerous Failure, expressed in years — derived from manufacturer failure-rate data for each component in the safety chain. For Categories 2–4, MTTFd feeds into the achieved PL calculation alongside DCavg (average diagnostic coverage) and the CCF score. Higher MTTFd raises the achievable PL; the three parameters together, combined with the Category, map to an achieved PL via the look-up table in ISO 13849-1.
+  - q: "How does ISO 13849-1 relate to IEC 62061?"
+    a: >-
+      ISO 13849-1 and IEC 62061 are two harmonised pathways to the same functional safety goal under the EU Machinery Regulation (EU) 2023/1230. ISO 13849-1 covers any technology — mechanical, hydraulic, pneumatic, or electronic — while IEC 62061 applies specifically to electrical, electronic, and programmable electronic (E/E/PE) control systems. Both descend from IEC 61508, and the PL/SIL mapping is fixed: PL d ≡ SIL 2, PL e ≡ SIL 3.
+  - q: "What documentation does ISO 13849 validation require?"
+    a: >-
+      A validation report must include schematic-level tracing of the complete safety chain, MTTFd data for each component (from manufacturer failure-rate data or standards tables), calculated DCavg, a CCF score with justification, and functional safety management records. These are what a notified body or third-party certification body audits before issuing a declaration of conformity. Gathering this evidence is straightforward when the safety architecture is designed with auditability in mind from the start — not retrofitted after hardware is built.
+canonical: "https://brain4machinery.com/glossary/iso-13849-for-robotic-machinery/"
+---
+
+When an AI-enabled machine physically interacts with a person — an agricultural robot pausing short of a field worker, a collaborative arm limiting contact force during hand guiding — a safety failure is not a software incident. It is a regulatory event, and in some scenarios an injury. ISO 13849-1 is the standard that turns "our safety system works" into something a notified body can audit.
+
+Most engineers encounter ISO 13849-1 when a customer asks for a CE declaration under the European Machinery Regulation (EU) 2023/1230, or when a system integrator raises conformance during acceptance testing. The standard defines **safety-related parts of control systems (SRP/CS)**: the portions of the control system that, if they fail, immediately increase risk to people near the machine. Safety functions in scope include emergency stop, interlocks, two-hand controls, and speed or position monitoring on robots and industrial equipment.
+
+The hard problem for AI-native machines is not the math — it is the architecture. A [NVIDIA Jetson](/platform) Orin NX running ROS 2 on Linux is a general-purpose compute platform. Standard Jetson modules carry no IEC 61508 or ISO 26262 functional safety certification. Routing the emergency-stop path or the safety-rated monitored stop through a Linux process means that safety function has no claim to any PL — not even PL a. The certification path closes before it opens.
+
+ISO 13849-1:2023 (Edition 4, current) provides the framework to solve this correctly. Two concepts do the work: **Performance Level (PL)** quantifies how reliable a safety function must be. **Category** specifies the structural architecture that makes that reliability achievable.
+
+## Performance Levels
+
+A Performance Level is a band of probability of dangerous failure per hour (PFHd). Lower PFHd means a harder target. The five bands:
+
+| PL | PFHd range | SIL equivalence |
+|----|-----------|-----------------|
+| a | ≥ 10⁻⁵ and < 10⁻⁴ /h | — |
+| b | ≥ 3 × 10⁻⁶ and < 10⁻⁵ /h | SIL 1 |
+| c | ≥ 10⁻⁶ and < 3 × 10⁻⁶ /h | SIL 1 |
+| d | ≥ 10⁻⁷ and < 10⁻⁶ /h | SIL 2 |
+| e | ≥ 10⁻⁸ and < 10⁻⁷ /h | SIL 3 |
+
+PL d means roughly one dangerous failure per 1–10 million operating hours. ISO 10218-2:2025 — which formally absorbed the collaborative-robot mode requirements from ISO/TS 15066 — sets **PL d / SIL 2 as the minimum** for robot work-cell safety functions: safety-rated monitored stop, power-and-force limiting, and speed-and-separation monitoring all start there. Risk assessment per ISO 12100 determines whether a specific function requires PL e.
+
+## Categories
+
+Category is architecturally independent of the PFHd arithmetic. It prescribes the structural ceiling a design can reach — a Category 1 architecture cannot achieve PL d regardless of how reliable the individual components are:
+
+| Category | Architecture | Fault tolerance | Max achievable PL |
+|----------|-------------|-----------------|-------------------|
+| B | Single channel, basic components | 0 — single fault can defeat function | b |
+| 1 | Single channel, well-tried components | 0 | c |
+| 2 | Single channel + periodic self-test (OTE) | 0, but faults detected at intervals | d |
+| 3 | Dual-channel redundant | 1 — single fault does not lose function | e |
+| 4 | Dual-channel + fault confirmed before next demand | 1 — accumulated fault cannot cause loss | e |
+
+Category 4 additionally requires average diagnostic coverage (DCavg) ≥ 99% — the "high" DC band in the standard — and a common cause failure (CCF) score of at least 65 on the standard's checklist. That checklist assigns points for design practices: physical separation of channels, component diversity, dedicated test modes, and documented maintenance procedures.
+
+## The three parameters that determine achieved PL
+
+For Categories 2–4, the achieved PL is a function of three inputs you calculate from hardware data and document for the validation report:
+
+- **MTTFd** (Mean Time to Dangerous Failure, in years) — derived from manufacturer failure-rate data for every component in the safety chain
+- **DCavg** (Average Diagnostic Coverage) — the fraction of dangerous failures that built-in diagnostics detect before they cause harm
+- **CCF** (Common Cause Failure score) — a structured checklist that awards points for practices that prevent a single event from defeating both channels of a redundant architecture simultaneously
+
+These three, combined with the Category, map to an achieved PL via the look-up table in ISO 13849-1 Annex K. The IFA's SISTEMA software automates this calculation and is widely used by practitioners to produce the validation report documentation.
+
+## Keeping the AI stack outside the boundary
+
+```mermaid
+flowchart LR
+    subgraph AI["AI Layer — not SRP/CS"]
+        J["NVIDIA Jetson\nROS 2 / Linux"]
+    end
+    subgraph Safety["Safety Layer — SRP/CS"]
+        WD["Hardware Watchdog"]
+        FPGA["FPGA / Safety MCU"]
+    end
+    J -->|"heartbeat"| WD
+    WD -->|"missed heartbeat → safe state"| FPGA
+    FPGA -->|"E-stop / brake / torque limit"| ACT["Actuators"]
+```
+
+The FPGA watchdog monitors the application processor. If the Jetson misses a heartbeat — whether because of a kernel panic, scheduler pressure, or runaway process — the FPGA drops actuators to safe state without waiting for Linux to respond. The Jetson stack stays entirely outside the SRP/CS boundary, and its scheduler behavior does not affect the safety function's achieved PL. For a broader look at how the AI and safety layers compose in practice, see [AI-native controller primer](/glossary/ai-native-controller-primer).
+
+This pattern applies beyond TACTUN's architecture: NVIDIA's own IGX Thor platform achieves ASIL D / SIL 2 by adding a dedicated Functional Safety Island alongside the application-class SoC — illustrating that safety isolation requires a separate certified processor, not a certified version of the general-purpose one.
+
+For context on how the programmable-logic side of this architecture handles deterministic control loops, see [IEC 61131-3 for robotics](/glossary/iec-61131-3-for-robotics).
+
+## Related standards
+
+ISO 13849-1 sits in a family that covers overlapping scope:
+
+- **ISO 12100:2010** — foundational risk assessment; identifies required safety functions and determines target PL
+- **IEC 62061** — alternative harmonised path for E/E/PE machinery safety; equivalent to ISO 13849-1 under EU Machinery Regulation for electronic control systems
+- **IEC 61508** — parent functional safety standard; ISO 13849-1 and IEC 62061 are both sector-specific derivatives
+- **ISO 10218-2:2025** — robot-system integration requirements; absorbed ISO/TS 15066 collaborative-robot modes in the 2025 revision
+
+## How TACTUN supports ISO 13849-1 compliance
+
+TACTUN's control spine uses [FPGA real-time control](/platform#capabilities) as the deterministic safety layer, with safety logic and machine state management — E-stop routing, brake control, safe-state sequencing — built in as first-class platform capabilities. The NVIDIA Jetson Orin handles AI compute on the far side of a hardware watchdog, keeping the Linux stack out of the SRP/CS boundary by design.
+
+With 14 years of systems integration experience, the team understands what certification bodies need: schematic-level tracing of the safety chain, component MTTFd data, computed DCavg and CCF scores, and a validation report an auditor can follow through to the declaration of conformity. The architecture is designed to be auditable from the start, not patched for compliance after the board is built.
+
+---
+
+Ready to discuss safety architecture for your machine? [Start a conversation](/contact) — we can work through the risk assessment, the SRP/CS boundary placement, and the documentation path to CE or other market conformance.

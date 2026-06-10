@@ -20,6 +20,7 @@
 ## Glossary
 
 - [What is an AI-native controller? A 2026 primer for robotics teams](https://brain4machinery.com/glossary/ai-native-controller-primer/): Definition and architecture of AI-native controllers: FPGA real-time control paired with Jetson edge AI on one board, for autonomous machines.
+- [ISO 13849 for Robotic Machinery: Performance Levels & Categories](https://brain4machinery.com/glossary/iso-13849-for-robotic-machinery/): A practical glossary of ISO 13849-1 — performance levels PL a–e, categories B–4, and the architectural pattern that keeps AI outside the safety boundary.
 
 ## Blog
 
