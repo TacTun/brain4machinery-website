@@ -52,7 +52,7 @@ When an AI-enabled machine physically interacts with a person — an agricultura
 
 Most engineers encounter ISO 13849-1 when a customer asks for a CE declaration under the European Machinery Regulation (EU) 2023/1230, or when a system integrator raises conformance during acceptance testing. The standard defines **safety-related parts of control systems (SRP/CS)**: the portions of the control system that, if they fail, immediately increase risk to people near the machine. Safety functions in scope include emergency stop, interlocks, two-hand controls, and speed or position monitoring on robots and industrial equipment.
 
-The hard problem for AI-native machines is not the math — it is the architecture. A [NVIDIA Jetson](/platform) Orin NX running ROS 2 on Linux is a general-purpose compute platform. Standard Jetson modules carry no IEC 61508 or ISO 26262 functional safety certification. Routing the emergency-stop path or the safety-rated monitored stop through a Linux process means that safety function has no claim to any PL — not even PL a. The certification path closes before it opens.
+The hard problem for AI-native machines is not the math — it is the architecture. A [NVIDIA Jetson](/platform/) Orin NX running ROS 2 on Linux is a general-purpose compute platform. Standard Jetson modules carry no IEC 61508 or ISO 26262 functional safety certification. Routing the emergency-stop path or the safety-rated monitored stop through a Linux process means that safety function has no claim to any PL — not even PL a. The certification path closes before it opens.
 
 ISO 13849-1:2023 (Edition 4, current) provides the framework to solve this correctly. Two concepts do the work: **Performance Level (PL)** quantifies how reliable a safety function must be. **Category** specifies the structural architecture that makes that reliability achievable.
 
@@ -110,11 +110,11 @@ flowchart LR
     FPGA -->|"E-stop / brake / torque limit"| ACT["Actuators"]
 ```
 
-The FPGA watchdog monitors the application processor. If the Jetson misses a heartbeat — whether because of a kernel panic, scheduler pressure, or runaway process — the FPGA drops actuators to safe state without waiting for Linux to respond. The Jetson stack stays entirely outside the SRP/CS boundary, and its scheduler behavior does not affect the safety function's achieved PL. For a broader look at how the AI and safety layers compose in practice, see [AI-native controller primer](/glossary/ai-native-controller-primer).
+The FPGA watchdog monitors the application processor. If the Jetson misses a heartbeat — whether because of a kernel panic, scheduler pressure, or runaway process — the FPGA drops actuators to safe state without waiting for Linux to respond. The Jetson stack stays entirely outside the SRP/CS boundary, and its scheduler behavior does not affect the safety function's achieved PL. For a broader look at how the AI and safety layers compose in practice, see [AI-native controller primer](/glossary/ai-native-controller-primer/).
 
 This pattern applies beyond TACTUN's architecture: NVIDIA's own IGX Thor platform achieves ASIL D / SIL 2 by adding a dedicated Functional Safety Island alongside the application-class SoC — illustrating that safety isolation requires a separate certified processor, not a certified version of the general-purpose one.
 
-For context on how the programmable-logic side of this architecture handles deterministic control loops, see [IEC 61131-3 for robotics](/glossary/iec-61131-3-for-robotics).
+For context on how the programmable-logic side of this architecture handles deterministic control loops, see [IEC 61131-3 for robotics](/glossary/iec-61131-3-for-robotics/).
 
 ## Related standards
 
@@ -127,10 +127,10 @@ ISO 13849-1 sits in a family that covers overlapping scope:
 
 ## How TACTUN supports ISO 13849-1 compliance
 
-TACTUN's control spine uses [FPGA real-time control](/platform#capabilities) as the deterministic safety layer, with safety logic and machine state management — E-stop routing, brake control, safe-state sequencing — built in as first-class platform capabilities. The NVIDIA Jetson Orin handles AI compute on the far side of a hardware watchdog, keeping the Linux stack out of the SRP/CS boundary by design.
+TACTUN's control spine uses [FPGA real-time control](/platform/#capabilities) as the deterministic safety layer, with safety logic and machine state management — E-stop routing, brake control, safe-state sequencing — built in as first-class platform capabilities. The NVIDIA Jetson Orin handles AI compute on the far side of a hardware watchdog, keeping the Linux stack out of the SRP/CS boundary by design.
 
 With 14 years of systems integration experience, the team understands what certification bodies need: schematic-level tracing of the safety chain, component MTTFd data, computed DCavg and CCF scores, and a validation report an auditor can follow through to the declaration of conformity. The architecture is designed to be auditable from the start, not patched for compliance after the board is built.
 
 ---
 
-Ready to discuss safety architecture for your machine? [Start a conversation](/contact) — we can work through the risk assessment, the SRP/CS boundary placement, and the documentation path to CE or other market conformance.
+Ready to discuss safety architecture for your machine? [Start a conversation](/contact/) — we can work through the risk assessment, the SRP/CS boundary placement, and the documentation path to CE or other market conformance.
