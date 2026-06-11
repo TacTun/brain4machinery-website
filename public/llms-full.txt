@@ -1,6 +1,6 @@
 # TACTUN — brain4machinery.com — Full content snapshot
 
-Auto-generated. For citation by LLMs. Last regenerated: 2026-06-10T18:15:18.276Z
+Auto-generated. For citation by LLMs. Last regenerated: 2026-06-11T04:05:19.519Z
 
 ---
 url: https://brain4machinery.com/guides/custom-jetson-carrier-board-design/
@@ -832,6 +832,90 @@ Building an AI-native controller from scratch typically costs $900K–$2M+ and t
 Talk to us about your machine — describe the control loop timing, the inference workload, and the operating environment, and we will return a board architecture in 5 business days. [Start a conversation →](/contact/)
 
 ---
+url: https://brain4machinery.com/glossary/iec-61131-3-for-robotics/
+title: IEC 61131-3 for robotics: what it is, when it matters, when it doesn't
+description: IEC 61131-3 defines four PLC programming languages. Learn where it dominates, where modern robotics stacks bypass it, and when a SoftPLC layer bridges the gap.
+---
+
+Your machine runs a Jetson Orin NX for perception, a C++ ROS 2 stack for coordination, and an FPGA closing real-time control loops. IEC 61131-3 is the last thing on your mind. Then an industrial buyer sends a procurement checklist. Line 17: *"IEC 61131-3 compliance required."* You've spent two years building an AI-native control spine and now you're wondering whether you need to rewrite it in Ladder Diagram.
+
+You don't. But you need to understand what the standard actually requires — and when a SoftPLC compatibility layer gives you the checkbox without touching your control architecture.
+
+## What IEC 61131-3 is
+
+IEC 61131-3 is the international standard titled *Programmable controllers – Part 3: Programming languages*, published by the International Electrotechnical Commission. First issued in December 1993, it reached Edition 4 in May 2025. The standard specifies the syntax and semantics of programming languages for programmable logic controllers — the deterministic hardware controllers that have run factory automation, process control, and packaging machinery for decades.
+
+Edition 4 defines four active languages:
+
+| Language | Abbr | Style | Typical use |
+|---|---|---|---|
+| Structured Text | ST | Text (Pascal-like) | Complex logic, math, loops — closest to conventional programming |
+| Ladder Diagram | LD | Visual relay-logic symbols | Technician-readable logic; direct relay-wiring migration |
+| Function Block Diagram | FBD | Interconnected visual blocks | Continuous control, PID loops |
+| Sequential Function Chart | SFC | State-machine diagram | Batch processes, multi-step sequences |
+
+A fifth language, Instruction List (IL), was deprecated in Edition 3 (2013) and removed entirely from Edition 4 (2025). Edition 4 also adds object-oriented properties with PRIVATE, PROTECTED, and PUBLIC access specifiers, Mutex and Semaphore primitives for concurrency synchronisation, and UTF-8 string types (USTRING, UCHAR) — the first substantial modernisation since Edition 3.
+
+## Where IEC 61131-3 dominates
+
+Every major industrial PLC platform conforms to IEC 61131-3. Beckhoff TwinCAT 3 explicitly meets the standard across all four languages on x86 PC hardware. Rockwell Automation Studio 5000 Logix Designer is IEC 61131-3 compliant across LD, ST, FBD, and SFC, with conformance documented in publication 1756-PM018. B&R Automation Studio supports all four languages plus ANSI C and C++.
+
+The common thread is readability by people who are not software engineers. Ladder Diagram looks like the relay-wiring diagrams maintenance technicians have read for 40 years. IEC 61131-3 standardises that shared vocabulary across vendor platforms — a technician trained on one system can read control logic written on another.
+
+## Why AI-native robotics teams bypass it
+
+The AI-native generation writes perception in Python and C++ on Linux, connecting components through ROS 2's DDS-based publish-subscribe graph. `rclcpp` handles time-critical execution; `rclpy` handles higher-level logic. Real-time determinism comes from the FPGA layer — HDL or C running deterministic control loops independent of the Linux kernel scheduler — not from a PLC runtime.
+
+IEC 61131-3 wasn't designed for this stack. The standard has no native concept of a DDS topic graph, GPU-accelerated inference, or over-the-air firmware updates pushed from CI. Forcing the architecture through a PLC IDE to satisfy a compliance requirement trades the engineering advantages of the modern stack for a programming model built for the 1990s factory floor.
+
+For a detailed look at how these stacks are assembled in practice, see the [AI-native controller primer](/glossary/ai-native-controller-primer/).
+
+## When it still matters — and how to satisfy it
+
+Two situations keep IEC 61131-3 relevant for AI-native machine builders.
+
+**Industrial and regulated buyers.** Factory-automation customers with established Siemens, Beckhoff, or Rockwell deployments expect their maintenance team to open the machine's control logic in a PLC IDE. If your buyers are OEM integrators in that world, IEC 61131-3 will appear on procurement checklists and certification audits — plan for it from day one.
+
+**Interoperability with existing plant systems.** A robot deployed alongside Beckhoff TwinCAT-based conveyors may need to present a programming interface the controls team can commission and modify without a software engineer in the room.
+
+Neither situation requires rebuilding your stack. SoftPLC runtimes decouple the IEC 61131-3 programming model from the underlying hardware. CODESYS Control for Linux ARM SL runs as an IEC 61131-3-compliant SoftPLC on any ARM Linux device — the same architecture class as a platform hosting an NVIDIA Jetson module. ISaGRAF (maintained by Rockwell Automation) provides an IEC 61131-3 and IEC 61499 runtime that runs on Linux without modifying its core engine.
+
+```mermaid
+flowchart LR
+  J["Jetson Orin NX\n(ROS 2 / Python)"]
+  F["FPGA\n(deterministic control loops)"]
+  S["SoftPLC layer\n(CODESYS or ISaGRAF)"]
+  J -->|"DDS topics"| F
+  J -->|"IPC"| S
+  S -->|"IEC 61131-3 interface"| T["Technician\n/ PLC IDE"]
+  F -->|"deterministic I/O"| A["Actuators & sensors"]
+```
+
+The SoftPLC layer satisfies the procurement requirement. The FPGA and ROS 2 architecture stay untouched.
+
+## The decision heuristic
+
+If your buyers are factory-automation customers accustomed to Siemens, Beckhoff, or Rockwell PLCs — plan for IEC 61131-3 compatibility from day one, even if your primary stack never touches a Structured Text editor. If your buyers are robotics OEMs and end users of autonomous machines, modern software practices typically win, and IEC 61131-3 can remain optional. In either case, the architecture decision that costs the most is ruling out a SoftPLC layer before hardware is locked — adding it later is harder than preserving the option now.
+
+## Related standards
+
+IEC 61131-3 appears alongside a cluster of standards on compliance checklists:
+
+- **ISO 13849-1** — Safety of machinery: safety-related parts of control systems. Defines five Performance Levels (PLa through PLe). Applies to the hardware-and-logic combination that implements a safety function, independent of whether that logic is written in Structured Text or C.
+- **IEC 61508** — Functional safety of electrical/electronic/programmable electronic (E/E/PE) systems. The parent standard from which ISO 13849-1 and IEC 62061 derive. Covers the entire functional safety lifecycle.
+- **IEC 61784 / IEC 61158** — Industrial communication network profiles and fieldbus specifications. Covers EtherCAT (fieldbus type 12 in IEC 61158, CP 12 in IEC 61784-2), PROFINET, and CC-Link IE TSN. The communication layer is defined here, separately from the programming model.
+
+The programming model (IEC 61131-3) and the safety integrity level (PLe under ISO 13849-1, SIL 3 under IEC 61508) are orthogonal. You can write a PLe-rated safety function in Structured Text or in C — the standard specifies the language, not the required safety level.
+
+## What TACTUN does
+
+The [TACTUN platform](/platform/) is built around an FPGA spine for deterministic real-time control and NVIDIA Jetson integration for edge AI compute. The real-time layer handles servo, stepper, hydraulic, and pneumatic actuators; safety logic and machine state management are part of the platform. For customers deploying into IEC 61131-3 environments, a SoftPLC compatibility layer can run alongside this architecture — satisfying procurement requirements without redesigning the control stack.
+
+---
+
+Deciding whether IEC 61131-3 belongs in your architecture — and where — is easier with a clear picture of who your buyers are and what their maintenance teams look like. [Talk to us about your machine](/contact/) — we've worked through this trade-off across factory-automation and autonomous-robot deployments.
+
+---
 url: https://brain4machinery.com/glossary/iso-13849-for-robotic-machinery/
 title: ISO 13849 for Robotic Machinery: Performance Levels & Categories
 description: A practical glossary of ISO 13849-1 — performance levels PL a–e, categories B–4, and the architectural pattern that keeps AI outside the safety boundary.
@@ -841,7 +925,7 @@ When an AI-enabled machine physically interacts with a person — an agricultura
 
 Most engineers encounter ISO 13849-1 when a customer asks for a CE declaration under the European Machinery Regulation (EU) 2023/1230, or when a system integrator raises conformance during acceptance testing. The standard defines **safety-related parts of control systems (SRP/CS)**: the portions of the control system that, if they fail, immediately increase risk to people near the machine. Safety functions in scope include emergency stop, interlocks, two-hand controls, and speed or position monitoring on robots and industrial equipment.
 
-The hard problem for AI-native machines is not the math — it is the architecture. A [NVIDIA Jetson](/platform) Orin NX running ROS 2 on Linux is a general-purpose compute platform. Standard Jetson modules carry no IEC 61508 or ISO 26262 functional safety certification. Routing the emergency-stop path or the safety-rated monitored stop through a Linux process means that safety function has no claim to any PL — not even PL a. The certification path closes before it opens.
+The hard problem for AI-native machines is not the math — it is the architecture. A [NVIDIA Jetson](/platform/) Orin NX running ROS 2 on Linux is a general-purpose compute platform. Standard Jetson modules carry no IEC 61508 or ISO 26262 functional safety certification. Routing the emergency-stop path or the safety-rated monitored stop through a Linux process means that safety function has no claim to any PL — not even PL a. The certification path closes before it opens.
 
 ISO 13849-1:2023 (Edition 4, current) provides the framework to solve this correctly. Two concepts do the work: **Performance Level (PL)** quantifies how reliable a safety function must be. **Category** specifies the structural architecture that makes that reliability achievable.
 
@@ -899,11 +983,11 @@ flowchart LR
     FPGA -->|"E-stop / brake / torque limit"| ACT["Actuators"]
 ```
 
-The FPGA watchdog monitors the application processor. If the Jetson misses a heartbeat — whether because of a kernel panic, scheduler pressure, or runaway process — the FPGA drops actuators to safe state without waiting for Linux to respond. The Jetson stack stays entirely outside the SRP/CS boundary, and its scheduler behavior does not affect the safety function's achieved PL. For a broader look at how the AI and safety layers compose in practice, see [AI-native controller primer](/glossary/ai-native-controller-primer).
+The FPGA watchdog monitors the application processor. If the Jetson misses a heartbeat — whether because of a kernel panic, scheduler pressure, or runaway process — the FPGA drops actuators to safe state without waiting for Linux to respond. The Jetson stack stays entirely outside the SRP/CS boundary, and its scheduler behavior does not affect the safety function's achieved PL. For a broader look at how the AI and safety layers compose in practice, see [AI-native controller primer](/glossary/ai-native-controller-primer/).
 
 This pattern applies beyond TACTUN's architecture: NVIDIA's own IGX Thor platform achieves ASIL D / SIL 2 by adding a dedicated Functional Safety Island alongside the application-class SoC — illustrating that safety isolation requires a separate certified processor, not a certified version of the general-purpose one.
 
-For context on how the programmable-logic side of this architecture handles deterministic control loops, see [IEC 61131-3 for robotics](/glossary/iec-61131-3-for-robotics).
+For context on how the programmable-logic side of this architecture handles deterministic control loops, see [IEC 61131-3 for robotics](/glossary/iec-61131-3-for-robotics/).
 
 ## Related standards
 
@@ -916,11 +1000,11 @@ ISO 13849-1 sits in a family that covers overlapping scope:
 
 ## How TACTUN supports ISO 13849-1 compliance
 
-TACTUN's control spine uses [FPGA real-time control](/platform#capabilities) as the deterministic safety layer, with safety logic and machine state management — E-stop routing, brake control, safe-state sequencing — built in as first-class platform capabilities. The NVIDIA Jetson Orin handles AI compute on the far side of a hardware watchdog, keeping the Linux stack out of the SRP/CS boundary by design.
+TACTUN's control spine uses [FPGA real-time control](/platform/#capabilities) as the deterministic safety layer, with safety logic and machine state management — E-stop routing, brake control, safe-state sequencing — built in as first-class platform capabilities. The NVIDIA Jetson Orin handles AI compute on the far side of a hardware watchdog, keeping the Linux stack out of the SRP/CS boundary by design.
 
 With 14 years of systems integration experience, the team understands what certification bodies need: schematic-level tracing of the safety chain, component MTTFd data, computed DCavg and CCF scores, and a validation report an auditor can follow through to the declaration of conformity. The architecture is designed to be auditable from the start, not patched for compliance after the board is built.
 
 ---
 
-Ready to discuss safety architecture for your machine? [Start a conversation](/contact) — we can work through the risk assessment, the SRP/CS boundary placement, and the documentation path to CE or other market conformance.
+Ready to discuss safety architecture for your machine? [Start a conversation](/contact/) — we can work through the risk assessment, the SRP/CS boundary placement, and the documentation path to CE or other market conformance.
 
