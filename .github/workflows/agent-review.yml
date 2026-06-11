@@ -89,6 +89,8 @@ jobs:
           Output a short bulleted review, then a final line that is EXACTLY one of:
           VERDICT: APPROVE
           VERDICT: REQUEST_CHANGES
+          Keep the review tight (aim well under 800 words) even for a large diff —
+          if your reply is cut off before the VERDICT line, the review fails closed.
           SYS
           )
 
@@ -100,8 +102,12 @@ jobs:
           Unified diff (truncated to 60k chars):
           $DIFF"
 
+          # max_tokens sizes the REVIEW, not the diff: at 1200 a thorough review
+          # of a large PR can hit the cap mid-sentence, never emit its VERDICT
+          # line, and read as REQUEST_CHANGES (hit on the engine repo's twin
+          # workflow, PR #81, 2026-06-11).
           REQ="$(jq -n --arg m "$MODEL" --arg s "$SYSTEM" --arg u "$USER" \
-            '{model:$m, max_tokens:1200, system:$s, messages:[{role:"user", content:$u}]}')"
+            '{model:$m, max_tokens:4000, system:$s, messages:[{role:"user", content:$u}]}')"
 
           RESP="$(curl -sS https://api.anthropic.com/v1/messages \
             -H "x-api-key: ${ANTHROPIC_API_KEY}" \
@@ -114,6 +120,15 @@ jobs:
             echo "::error title=Agent review failed::Empty/invalid response from Anthropic API."
             printf '%s\n' "$RESP" | jq -r '.error.message // "unknown error"' || true
             # Fail closed: an unreviewable PR should not auto-merge.
+            exit 1
+          fi
+
+          STOP="$(printf '%s' "$RESP" | jq -r '.stop_reason // empty')"
+          if [ "$STOP" = "max_tokens" ]; then
+            # Distinguish "review cut off" from "reviewer requested changes" —
+            # a truncated review has no VERDICT line and would silently read
+            # as the latter. Still fail closed, but say why.
+            echo "::error title=Agent review truncated::Review hit max_tokens before the VERDICT line — raise max_tokens or shrink the diff."
             exit 1
           fi
 
