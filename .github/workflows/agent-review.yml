@@ -60,8 +60,15 @@ jobs:
           set -uo pipefail
 
           # Bound the diff so a huge PR can't blow the context/token budget.
-          DIFF="$(gh pr diff "$PR" --repo "$REPO" | head -c 60000)"
-          BODY="$(gh pr view "$PR" --repo "$REPO" --json body --jq '.body' | head -c 4000)"
+          # Fetch to a file FIRST, then truncate: `gh pr diff | head -c` under
+          # pipefail dies with SIGPIPE (exit 141) whenever the diff outruns
+          # head's cap plus the ~64K pipe buffer — i.e. any diff over ~120K
+          # chars killed the review before it started (hit on the engine repo
+          # 2026-06-11; this is the same latent pattern).
+          gh pr diff "$PR" --repo "$REPO" > "$RUNNER_TEMP/pr.diff"
+          DIFF="$(head -c 60000 "$RUNNER_TEMP/pr.diff")"
+          gh pr view "$PR" --repo "$REPO" --json body --jq '.body' > "$RUNNER_TEMP/pr.body"
+          BODY="$(head -c 4000 "$RUNNER_TEMP/pr.body")"
 
           SYSTEM=$(cat <<'SYS'
           You are an independent, skeptical reviewer for the brain4machinery.com Astro website repo.
