@@ -92,10 +92,26 @@ async function main() {
   console.log(`generate-llms-txt: wrote llms.txt (${lines.length} lines)`);
 
   // Build llms-full.txt — markdown dump of cornerstone content (guides + glossary)
+  //
+  // Stamp with the newest content date, NOT wall-clock now(): a volatile
+  // timestamp made every nightly regeneration differ from main by that line
+  // alone, so the auto-PR (chore/llms-regen) always had a diff and could
+  // never close itself — PR #30 sat open for 16 days updating nothing but
+  // the clock. With a content-derived stamp, no content change → no diff →
+  // create-pull-request closes the rolling PR automatically.
+  let lastContentDate = '';
+  for (const col of ['guides', 'glossary']) {
+    for (const f of await listContent(col)) {
+      const { data } = parseFrontmatter(await readFile(join(contentDir, col, f), 'utf8'));
+      for (const d of [data.publishedDate, data.updatedDate]) {
+        if (d && d > lastContentDate) lastContentDate = d;
+      }
+    }
+  }
   const fullLines = [];
   fullLines.push(`# TACTUN — brain4machinery.com — Full content snapshot`);
   fullLines.push(``);
-  fullLines.push(`Auto-generated. For citation by LLMs. Last regenerated: ${new Date().toISOString()}`);
+  fullLines.push(`Auto-generated. For citation by LLMs. Last content update: ${lastContentDate || 'unknown'}`);
   fullLines.push(``);
 
   for (const col of ['guides', 'glossary']) {
