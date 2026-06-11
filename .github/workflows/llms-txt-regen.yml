@@ -21,7 +21,12 @@ jobs:
       - name: Regenerate llms.txt and llms-full.txt
         run: node scripts/generate-llms-txt.mjs
       - name: Open PR if changed
-        uses: peter-evans/create-pull-request@v7
+        # SHA-pinned to v8.1.1 (Node 24 line — GitHub force-runs actions on
+        # Node 24 from 2026-06-16; v7 is Node 20). NOTE: PRs created with the
+        # default GITHUB_TOKEN do not trigger CI/agent-review, so a rolling
+        # regen PR with a REAL content diff needs a human (or PAT) to get
+        # checks run before it can merge past branch protection.
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1  # v8.1.1
         with:
           commit-message: 'chore(llms): nightly regenerate llms.txt + llms-full.txt'
           title: 'chore(llms): nightly regenerate'
