@@ -13,3 +13,9 @@
 
 # PHP form endpoint moved to a Pages Function
 /contact.php       /api/contact     308
+
+# Sitemap alias. The real sitemap is /sitemap-index.xml (declared in robots.txt),
+# but crawlers, old Search Console submissions, and external tools probe the
+# conventional /sitemap.xml by default and currently hit a 404. 301 it to the
+# index so that default path resolves instead of dead-ending.
+/sitemap.xml       /sitemap-index.xml   301
