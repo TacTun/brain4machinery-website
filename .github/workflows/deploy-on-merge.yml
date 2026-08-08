@@ -86,8 +86,8 @@ jobs:
         run: |
           set -euo pipefail
 
-          SHAS_FILE=/tmp/prod_deploy_shas.txt
-          SHA_FILE=/tmp/main_sha.txt
+          DEPLOYED_SHAS_FILE=/tmp/prod_deploy_shas.txt
+          MAIN_SHA_FILE=/tmp/main_sha.txt
 
           # Retry with exponential backoff (5s, 10s, 20s). GitHub's API returns
           # transient 5xx often enough that at 96 polls/day we hit one every
@@ -113,7 +113,7 @@ jobs:
             gh run list --repo "$REPO" --workflow deploy.yml --limit 50 \
               --json headSha,headBranch,event \
               --jq '.[] | select(.headBranch == "main" and (.event == "push" or .event == "workflow_dispatch")) | .headSha' \
-              > "$SHAS_FILE.part" && mv "$SHAS_FILE.part" "$SHAS_FILE"
+              > "$DEPLOYED_SHAS_FILE.part" && mv "$DEPLOYED_SHAS_FILE.part" "$DEPLOYED_SHAS_FILE"
           }
 
           skip() {
@@ -130,14 +130,14 @@ jobs:
           # deploy. Promote per-attempt via .part, same as the run list below,
           # so only a successful attempt's bytes are ever read.
           fetch_main_sha() {
-            gh api "repos/$REPO/commits/main" --jq '.sha' > "$SHA_FILE.part" \
-              && mv "$SHA_FILE.part" "$SHA_FILE"
+            gh api "repos/$REPO/commits/main" --jq '.sha' > "$MAIN_SHA_FILE.part" \
+              && mv "$MAIN_SHA_FILE.part" "$MAIN_SHA_FILE"
           }
 
           if ! retry fetch_main_sha; then
             skip "Could not read main HEAD — GitHub API unreachable after retries."
           fi
-          MAIN_SHA="$(cat "$SHA_FILE")"
+          MAIN_SHA="$(cat "$MAIN_SHA_FILE")"
 
           # Belt and braces. gh can also exit 0 with EMPTY stdout if the
           # response shape ever changes (e.g. a renamed field): an empty
@@ -146,8 +146,14 @@ jobs:
           # nothing anywhere to notice it. That would also break the no-loop
           # property asserted at the top of this file. Anything that is not a
           # 40-hex SHA is a bug, not a deploy signal, so fail safe and wait.
-          if [[ ! "$MAIN_SHA" =~ ^[0-9a-f]{40}$ ]]; then
-            skip "Unexpected main HEAD value from gh api (${#MAIN_SHA} chars, not a 40-hex SHA)."
+          # Accept 40-hex (SHA-1) or 64-hex (SHA-256 object format), any case.
+          # GitHub.com doesn't serve SHA-256 repos today, but if it ever does
+          # and this repo migrates, a 40-only guard would reject on EVERY poll
+          # and kill the watchdog permanently and silently -- green forever.
+          # The guard's whole point is to fail safe on a TRANSIENT oddity; it
+          # must not fail silent-forever on a systemic one. Two characters.
+          if [[ ! "$MAIN_SHA" =~ ^[0-9a-fA-F]{40}([0-9a-fA-F]{24})?$ ]]; then
+            skip "Unexpected main HEAD value from gh api (${#MAIN_SHA} chars, not a hex SHA): '${MAIN_SHA:0:24}'."
           fi
           echo "main HEAD = $MAIN_SHA"
 
@@ -160,7 +166,7 @@ jobs:
             skip "Could not list deploy runs — GitHub API unreachable after retries."
           fi
 
-          if grep -qx "$MAIN_SHA" "$SHAS_FILE"; then
+          if grep -qx "$MAIN_SHA" "$DEPLOYED_SHAS_FILE"; then
             echo "main@$MAIN_SHA already has a production deploy run — nothing to do."
             exit 0
           fi
