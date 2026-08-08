@@ -26,6 +26,35 @@ name: Deploy watchdog (drift detector)
 #     already exists for it), so a deterministically-failing deploy can't spin —
 #     its failure is surfaced by the engine's failing-workflow digest instead.
 #   - no new secret: GITHUB_TOKEN can read runs and dispatch within this repo.
+#
+# ALERTING CONTRACT (added 2026-08-08) — READ BEFORE MAKING THIS JOB FAIL.
+# A single watchdog run carries NO signal. This is a poller: at */15 it runs 96
+# times a day, and a run that dies for any reason is repeated, identically, at
+# most 15 minutes later. So one red run means "GitHub had a bad minute", never
+# "production is broken" — but GitHub still emailed a human on every one of
+# them, and those emails went to whoever last edited the cron line, not to the
+# on-call in the engine's notification-guide.
+#
+# Observed noise, all GitHub-side infrastructure, zero code defects:
+#   2026-07-20  gh: "No server is currently available..." (HTTP 503)
+#   2026-07-24  "The job was not acquired by Runner of type hosted"
+#   2026-08-06  same runner-acquisition failure, twice (17:19 and 18:46 UTC)
+#
+# So this job is now built to be UNABLE to page anyone:
+#   1. Transient GitHub API errors are retried with backoff; if the API is still
+#      unreachable we emit a ::warning:: and exit 0. Skipping one poll is
+#      inherently safe — the next tick repeats the identical, idempotent check.
+#   2. `continue-on-error: true` keeps the RUN green even when the job never
+#      starts (runner-acquisition failures happen before any step executes, so
+#      nothing inside the script can catch them).
+#
+# ⚠ Because of (2) this workflow's run status is no longer an alarm. The real
+# drift condition — "main HEAD has been undeployed for too long" — is measured
+# directly by the engine's daily digest (`.github/scripts/build_digest.py`,
+# get_undeployed_main), which is immune to this infra noise because it checks
+# the actual deploy state rather than whether a poll happened to survive.
+# If you make this job fail loudly again, make sure that check is still in
+# place, or drift goes unnoticed.
 
 on:
   schedule:
@@ -45,6 +74,10 @@ jobs:
   ensure-deployed:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    # See ALERTING CONTRACT above: a single poll's outcome is not a signal, so
+    # it must never turn the run red and email a human. Genuine drift is
+    # detected by the engine digest, not by this run's status.
+    continue-on-error: true
     steps:
       - name: Dispatch a production deploy if main HEAD is undeployed
         env:
@@ -53,7 +86,75 @@ jobs:
         run: |
           set -euo pipefail
 
-          MAIN_SHA="$(gh api "repos/$REPO/commits/main" --jq '.sha')"
+          DEPLOYED_SHAS_FILE=/tmp/prod_deploy_shas.txt
+          MAIN_SHA_FILE=/tmp/main_sha.txt
+
+          # Retry with exponential backoff (5s, 10s, 20s). GitHub's API returns
+          # transient 5xx often enough that at 96 polls/day we hit one every
+          # few weeks; retrying absorbs it inside a single run.
+          retry() {
+            local attempt=1 max=4 delay=5
+            until "$@"; do
+              if [ "$attempt" -ge "$max" ]; then
+                return 1
+              fi
+              echo "attempt $attempt/$max failed ($*) — retrying in ${delay}s" >&2
+              sleep "$delay"
+              attempt=$((attempt + 1))
+              delay=$((delay * 2))
+            done
+            return 0
+          }
+
+          # Each attempt writes its own .part and only promotes it on success,
+          # so a half-written response from a failed attempt can never be
+          # concatenated with a good one and parsed as truth.
+          fetch_prod_deploy_shas() {
+            gh run list --repo "$REPO" --workflow deploy.yml --limit 50 \
+              --json headSha,headBranch,event \
+              --jq '.[] | select(.headBranch == "main" and (.event == "push" or .event == "workflow_dispatch")) | .headSha' \
+              > "$DEPLOYED_SHAS_FILE.part" && mv "$DEPLOYED_SHAS_FILE.part" "$DEPLOYED_SHAS_FILE"
+          }
+
+          skip() {
+            echo "::warning title=Deploy watchdog::$1 Skipped this poll; the next run (within 15 min) repeats the identical check. Sustained drift is reported by the engine digest."
+            exit 0
+          }
+
+          # ⚠ gh writes HTTP error bodies to STDOUT, and without a trailing
+          # newline. So capturing a RETRIED command with $( ) concatenates a
+          # failed attempt's error JSON onto the successful attempt's output:
+          # a 503-then-recover -- exactly the 2026-07-20 case this retry exists
+          # for -- would yield '{"message":"...503"}<sha>' on one line, match
+          # nothing in the deployed list, and dispatch a SPURIOUS production
+          # deploy. Promote per-attempt via .part, same as the run list below,
+          # so only a successful attempt's bytes are ever read.
+          fetch_main_sha() {
+            gh api "repos/$REPO/commits/main" --jq '.sha' > "$MAIN_SHA_FILE.part" \
+              && mv "$MAIN_SHA_FILE.part" "$MAIN_SHA_FILE"
+          }
+
+          if ! retry fetch_main_sha; then
+            skip "Could not read main HEAD — GitHub API unreachable after retries."
+          fi
+          MAIN_SHA="$(cat "$MAIN_SHA_FILE")"
+
+          # Belt and braces. gh can also exit 0 with EMPTY stdout if the
+          # response shape ever changes (e.g. a renamed field): an empty
+          # MAIN_SHA matches nothing, so we would dispatch a deploy every 15
+          # minutes forever -- 96 production deploys a day, every run green,
+          # nothing anywhere to notice it. That would also break the no-loop
+          # property asserted at the top of this file. Anything that is not a
+          # 40-hex SHA is a bug, not a deploy signal, so fail safe and wait.
+          # Accept 40-hex (SHA-1) or 64-hex (SHA-256 object format), any case.
+          # GitHub.com doesn't serve SHA-256 repos today, but if it ever does
+          # and this repo migrates, a 40-only guard would reject on EVERY poll
+          # and kill the watchdog permanently and silently -- green forever.
+          # The guard's whole point is to fail safe on a TRANSIENT oddity; it
+          # must not fail silent-forever on a systemic one. Two characters.
+          if [[ ! "$MAIN_SHA" =~ ^[0-9a-fA-F]{40}([0-9a-fA-F]{24})?$ ]]; then
+            skip "Unexpected main HEAD value from gh api (${#MAIN_SHA} chars, not a hex SHA): '${MAIN_SHA:0:24}'."
+          fi
           echo "main HEAD = $MAIN_SHA"
 
           # SHAs that already have a PRODUCTION deploy run (push:main or a
@@ -61,16 +162,17 @@ jobs:
           # in_progress = on its way, failure = a deploy was already attempted
           # (don't re-dispatch — that would loop on a broken main; the failure
           # is surfaced by the failing-workflow digest sweep instead).
-          gh run list --repo "$REPO" --workflow deploy.yml --limit 50 \
-            --json headSha,headBranch,event \
-            --jq '.[] | select(.headBranch == "main" and (.event == "push" or .event == "workflow_dispatch")) | .headSha' \
-            > /tmp/prod_deploy_shas.txt
+          if ! retry fetch_prod_deploy_shas; then
+            skip "Could not list deploy runs — GitHub API unreachable after retries."
+          fi
 
-          if grep -qx "$MAIN_SHA" /tmp/prod_deploy_shas.txt; then
+          if grep -qx "$MAIN_SHA" "$DEPLOYED_SHAS_FILE"; then
             echo "main@$MAIN_SHA already has a production deploy run — nothing to do."
             exit 0
           fi
 
           echo "No production deploy found for main@$MAIN_SHA — dispatching one."
-          gh workflow run deploy.yml --repo "$REPO" --ref main
+          if ! retry gh workflow run deploy.yml --repo "$REPO" --ref main; then
+            skip "Could not dispatch deploy.yml for main@$MAIN_SHA."
+          fi
           echo "::notice title=Deploy watchdog::Dispatched production deploy for main@$MAIN_SHA."
