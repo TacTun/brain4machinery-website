@@ -87,6 +87,7 @@ jobs:
           set -euo pipefail
 
           SHAS_FILE=/tmp/prod_deploy_shas.txt
+          SHA_FILE=/tmp/main_sha.txt
 
           # Retry with exponential backoff (5s, 10s, 20s). GitHub's API returns
           # transient 5xx often enough that at 96 polls/day we hit one every
@@ -120,8 +121,33 @@ jobs:
             exit 0
           }
 
-          if ! MAIN_SHA="$(retry gh api "repos/$REPO/commits/main" --jq '.sha')"; then
+          # ⚠ gh writes HTTP error bodies to STDOUT, and without a trailing
+          # newline. So capturing a RETRIED command with $( ) concatenates a
+          # failed attempt's error JSON onto the successful attempt's output:
+          # a 503-then-recover -- exactly the 2026-07-20 case this retry exists
+          # for -- would yield '{"message":"...503"}<sha>' on one line, match
+          # nothing in the deployed list, and dispatch a SPURIOUS production
+          # deploy. Promote per-attempt via .part, same as the run list below,
+          # so only a successful attempt's bytes are ever read.
+          fetch_main_sha() {
+            gh api "repos/$REPO/commits/main" --jq '.sha' > "$SHA_FILE.part" \
+              && mv "$SHA_FILE.part" "$SHA_FILE"
+          }
+
+          if ! retry fetch_main_sha; then
             skip "Could not read main HEAD — GitHub API unreachable after retries."
+          fi
+          MAIN_SHA="$(cat "$SHA_FILE")"
+
+          # Belt and braces. gh can also exit 0 with EMPTY stdout if the
+          # response shape ever changes (e.g. a renamed field): an empty
+          # MAIN_SHA matches nothing, so we would dispatch a deploy every 15
+          # minutes forever -- 96 production deploys a day, every run green,
+          # nothing anywhere to notice it. That would also break the no-loop
+          # property asserted at the top of this file. Anything that is not a
+          # 40-hex SHA is a bug, not a deploy signal, so fail safe and wait.
+          if [[ ! "$MAIN_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            skip "Unexpected main HEAD value from gh api (${#MAIN_SHA} chars, not a 40-hex SHA)."
           fi
           echo "main HEAD = $MAIN_SHA"
 
