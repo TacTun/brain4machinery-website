@@ -5,6 +5,13 @@
 User-agent: *
 Allow: /
 Disallow: /api/
+# Non-content endpoints. Neither is linked from the site, but Googlebot finds
+# them anyway and both answer a crawl with a redirect, which lands them in
+# Search Console's "Page with redirect" bucket as permanent noise:
+#   /admin      302s to the Cloudflare Access login on *.cloudflareaccess.com
+#   /contact.php  308s to /api/contact (kept for legacy POSTs; 404s on GET)
+Disallow: /admin
+Disallow: /contact.php
 
 # LLM / AI crawlers — explicitly allowed
 User-agent: GPTBot
