@@ -85,3 +85,8 @@ never here.
   redirects, and canonical mismatches, enriched with the GSC URL Inspection API.
 - Post-deploy smoke: the website dispatches `website-deployed` to the engine,
   which re-runs the live check against production and alerts on any problem.
+
+**Google Search Console mail is not a monitor.** It arrives weeks-to-months
+after the fact and most of it needs no action. See
+[`search-console-triage.md`](search-console-triage.md) for which reasons to
+ignore, which to act on, and why "fixing" one can trigger a fresh notice.
